@@ -197,3 +197,30 @@ body {
   height: 100%;
   padding: 8px;
 }
+
+/* Context menu */
+.context-menu {
+  position: fixed;
+  background-color: #2d2d2d;
+  border: 1px solid #454545;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #cccccc;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.context-menu button:hover {
+  background-color: #094771;
+}
