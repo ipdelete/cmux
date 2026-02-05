@@ -16,6 +16,7 @@ import { preloadConfig } from './webpack.preload.config';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    executableName: 'multi-repo-terminal',
   },
   rebuildConfig: {},
   makers: [

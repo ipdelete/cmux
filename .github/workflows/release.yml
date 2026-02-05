@@ -64,6 +64,7 @@ jobs:
     needs: check-version
     if: needs.check-version.outputs.should_release == 'true'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -89,15 +90,29 @@ jobs:
       - name: Build and package
         run: npm run make
 
+      - name: List output files
+        shell: bash
+        run: find out/make -type f 2>/dev/null || dir out\make /s /b
+
+      - name: Stage artifacts (Unix)
+        if: matrix.platform != 'windows'
+        shell: bash
+        run: |
+          mkdir -p staged
+          find out/make -type f \( -name "*.zip" -o -name "*.dmg" -o -name "*.deb" -o -name "*.rpm" \) -exec cp {} staged/ \;
+
+      - name: Stage artifacts (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path staged
+          Get-ChildItem -Path out/make -Recurse -Include *.exe,*.zip | Copy-Item -Destination staged/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.platform }}
-          path: |
-            out/make/**/*.exe
-            out/make/**/*.zip
-            out/make/**/*.deb
-            out/make/**/*.rpm
+          path: staged/*
           if-no-files-found: error
 
   release:
@@ -116,7 +131,7 @@ jobs:
           path: artifacts
 
       - name: Display downloaded files
-        run: find artifacts -type f -name "*"
+        run: find artifacts -type f
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -124,10 +139,6 @@ jobs:
           tag_name: v${{ needs.check-version.outputs.version }}
           name: Release v${{ needs.check-version.outputs.version }}
           generate_release_notes: true
-          files: |
-            artifacts/**/*.exe
-            artifacts/**/*.zip
-            artifacts/**/*.deb
-            artifacts/**/*.rpm
+          files: artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
