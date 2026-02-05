@@ -19,6 +19,11 @@ class TerminalService {
   }
 
   create(id: string, cwd: string): string {
+    // Return existing terminal if already created (prevents duplicate PTY on session restore)
+    if (this.terminals.has(id)) {
+      return id;
+    }
+
     const shell = this.getDefaultShell();
     
     const ptyProcess = pty.spawn(shell, [], {

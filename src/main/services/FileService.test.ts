@@ -20,9 +20,89 @@ const mockAccess = fs.promises.access as jest.MockedFunction<typeof fs.promises.
 describe('FileService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset allowed roots between tests
+    fileService.clearAllowedRoots();
+  });
+
+  describe('path validation', () => {
+    it('should allow reading files within allowed roots', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+      mockReadFile.mockResolvedValue('file content');
+
+      const result = await fileService.readFile('/home/user/project/src/index.ts');
+
+      expect(result).toBe('file content');
+      expect(mockReadFile).toHaveBeenCalled();
+    });
+
+    it('should reject reading files outside allowed roots', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+
+      await expect(fileService.readFile('/etc/passwd')).rejects.toThrow('Access denied');
+      expect(mockReadFile).not.toHaveBeenCalled();
+    });
+
+    it('should reject path traversal attempts', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+
+      await expect(fileService.readFile('/home/user/project/../../../etc/passwd')).rejects.toThrow('Access denied');
+      expect(mockReadFile).not.toHaveBeenCalled();
+    });
+
+    it('should reject directory reads outside allowed roots', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+
+      const result = await fileService.readDirectory('/etc');
+
+      expect(result).toEqual([]);
+      expect(mockReaddir).not.toHaveBeenCalled();
+    });
+
+    it('should allow reading directories within allowed roots', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+      mockReaddir.mockResolvedValue([
+        { name: 'file.txt', isDirectory: () => false },
+      ] as any);
+
+      const result = await fileService.readDirectory('/home/user/project/src');
+
+      expect(result).toHaveLength(1);
+      expect(mockReaddir).toHaveBeenCalled();
+    });
+
+    it('should handle multiple allowed roots', async () => {
+      fileService.addAllowedRoot('/home/user/project1');
+      fileService.addAllowedRoot('/home/user/project2');
+      mockReadFile.mockResolvedValue('content');
+
+      await fileService.readFile('/home/user/project1/file.ts');
+      await fileService.readFile('/home/user/project2/file.ts');
+
+      expect(mockReadFile).toHaveBeenCalledTimes(2);
+    });
+
+    it('should remove allowed root correctly', async () => {
+      fileService.addAllowedRoot('/home/user/project');
+      mockReadFile.mockResolvedValue('content');
+
+      // Should work before removal
+      await fileService.readFile('/home/user/project/file.ts');
+      expect(mockReadFile).toHaveBeenCalledTimes(1);
+
+      // Remove the root
+      fileService.removeAllowedRoot('/home/user/project');
+
+      // Should fail after removal
+      await expect(fileService.readFile('/home/user/project/file.ts')).rejects.toThrow('Access denied');
+    });
   });
 
   describe('readDirectory', () => {
+    beforeEach(() => {
+      // Allow test paths
+      fileService.addAllowedRoot('/test');
+    });
+
     it('should return sorted file entries with directories first', async () => {
       const mockEntries = [
         { name: 'zebra.txt', isDirectory: () => false },
@@ -90,6 +170,10 @@ describe('FileService', () => {
   });
 
   describe('readFile', () => {
+    beforeEach(() => {
+      fileService.addAllowedRoot('/test');
+    });
+
     it('should return file content as string', async () => {
       mockReadFile.mockResolvedValue('file content here');
 

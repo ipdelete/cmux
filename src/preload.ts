@@ -43,6 +43,7 @@ export interface ElectronAPI {
   fs: {
     readDirectory: (dirPath: string) => Promise<FileEntry[]>;
     readFile: (filePath: string) => Promise<string>;
+    addAllowedRoot: (rootPath: string) => Promise<void>;
     watchDirectory: (dirPath: string) => Promise<boolean>;
     unwatchDirectory: (dirPath: string) => Promise<void>;
     unwatchAll: () => Promise<void>;
@@ -71,6 +72,7 @@ const electronAPI: ElectronAPI = {
   fs: {
     readDirectory: (dirPath) => ipcRenderer.invoke('fs:readDirectory', dirPath),
     readFile: (filePath) => ipcRenderer.invoke('fs:readFile', filePath),
+    addAllowedRoot: (rootPath) => ipcRenderer.invoke('fs:addAllowedRoot', rootPath),
     watchDirectory: (dirPath) => ipcRenderer.invoke('fs:watchDirectory', dirPath),
     unwatchDirectory: (dirPath) => ipcRenderer.invoke('fs:unwatchDirectory', dirPath),
     unwatchAll: () => ipcRenderer.invoke('fs:unwatchAll'),

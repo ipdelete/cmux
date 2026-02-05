@@ -1,10 +1,14 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { terminalService } from '../services/TerminalService';
+import { fileService } from '../services/FileService';
 
 export function setupTerminalIPC(mainWindow: BrowserWindow): void {
   // Create a new terminal
   ipcMain.handle('terminal:create', (_event, id: string, cwd: string) => {
     terminalService.create(id, cwd);
+    
+    // Register cwd as allowed root for file access
+    fileService.addAllowedRoot(cwd);
     
     // Set up data handler to send output to renderer
     terminalService.onData(id, (data) => {

@@ -11,6 +11,10 @@ export function setupFileIPC(): void {
     return fileService.readFile(filePath);
   });
 
+  ipcMain.handle('fs:addAllowedRoot', async (_event, rootPath: string): Promise<void> => {
+    fileService.addAllowedRoot(rootPath);
+  });
+
   ipcMain.handle('fs:watchDirectory', async (_event, dirPath: string): Promise<boolean> => {
     return fileWatcherService.watchDirectory(dirPath);
   });

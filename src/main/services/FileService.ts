@@ -9,7 +9,38 @@ export interface FileEntry {
 }
 
 class FileService {
+  private allowedRoots: Set<string> = new Set();
+
+  addAllowedRoot(rootPath: string): void {
+    const normalized = path.resolve(rootPath);
+    this.allowedRoots.add(normalized);
+  }
+
+  removeAllowedRoot(rootPath: string): void {
+    const normalized = path.resolve(rootPath);
+    this.allowedRoots.delete(normalized);
+  }
+
+  clearAllowedRoots(): void {
+    this.allowedRoots.clear();
+  }
+
+  isPathAllowed(targetPath: string): boolean {
+    const normalized = path.resolve(targetPath);
+    for (const root of this.allowedRoots) {
+      if (normalized === root || normalized.startsWith(root + path.sep)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   async readDirectory(dirPath: string): Promise<FileEntry[]> {
+    if (!this.isPathAllowed(dirPath)) {
+      console.error('Access denied: path outside allowed roots:', dirPath);
+      return [];
+    }
+
     try {
       const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
       
@@ -35,6 +66,10 @@ class FileService {
   }
 
   async readFile(filePath: string): Promise<string> {
+    if (!this.isPathAllowed(filePath)) {
+      throw new Error('Access denied: path outside allowed roots');
+    }
+
     try {
       const content = await fs.promises.readFile(filePath, 'utf-8');
       return content;

@@ -81,6 +81,8 @@ function AppContent() {
     if (directory) {
       const id = `term-${Date.now()}`;
       const label = directory.split(/[/\\]/).pop() || 'Terminal';
+      // Register allowed root BEFORE adding terminal so FileTree can access it
+      await window.electronAPI.fs.addAllowedRoot(directory);
       dispatch({
         type: 'ADD_TERMINAL',
         payload: { id, label, cwd: directory },
