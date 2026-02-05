@@ -1,7 +1,7 @@
 {
   "name": "multi-repo-terminal",
   "productName": "Multi-Repo Terminal",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "Multi-repo terminal manager with integrated file browsing",
   "main": ".webpack/main",
   "private": true,
