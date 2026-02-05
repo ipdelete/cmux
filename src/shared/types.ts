@@ -24,6 +24,13 @@ export interface AppState {
   activeTerminalId: string | null;
 }
 
+export interface SessionData {
+  version: number;
+  terminals: Terminal[];
+  activeItemId: string | null;
+  activeTerminalId: string | null;
+}
+
 export type AppAction =
   | { type: 'ADD_TERMINAL'; payload: { id: string; label: string; cwd: string } }
   | { type: 'REMOVE_TERMINAL'; payload: { id: string } }

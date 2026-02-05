@@ -13,6 +13,23 @@ export interface FileWatchEvent {
   filename: string | null;
 }
 
+export interface SessionData {
+  version: number;
+  terminals: Array<{
+    id: string;
+    label: string;
+    cwd: string;
+    openFiles: Array<{
+      id: string;
+      path: string;
+      name: string;
+      parentTerminalId: string;
+    }>;
+  }>;
+  activeItemId: string | null;
+  activeTerminalId: string | null;
+}
+
 export interface ElectronAPI {
   openDirectory: () => Promise<string | null>;
   terminal: {
@@ -30,6 +47,10 @@ export interface ElectronAPI {
     unwatchDirectory: (dirPath: string) => Promise<void>;
     unwatchAll: () => Promise<void>;
     onDirectoryChanged: (callback: (event: FileWatchEvent) => void) => () => void;
+  };
+  session: {
+    save: (data: Omit<SessionData, 'version'>) => Promise<void>;
+    load: () => Promise<SessionData | null>;
   };
 }
 
@@ -63,6 +84,10 @@ const electronAPI: ElectronAPI = {
         ipcRenderer.removeListener('fs:directoryChanged', handler);
       };
     },
+  },
+  session: {
+    save: (data) => ipcRenderer.invoke('session:save', data),
+    load: () => ipcRenderer.invoke('session:load'),
   },
 };
 

@@ -1,13 +1,76 @@
 import * as React from 'react';
-import { AppStateProvider } from './contexts/AppStateContext';
+import { useEffect, useRef } from 'react';
 import { ThreePaneLayout } from './components/Layout';
 import { LeftPane } from './components/LeftPane';
 import { CenterPane } from './components/CenterPane';
 import { RightPane } from './components/RightPane';
-import { useAppState } from './contexts/AppStateContext';
+import { AppStateProvider, useAppState } from './contexts/AppStateContext';
 
 function AppContent() {
   const { state, dispatch } = useAppState();
+  const hasRestoredRef = useRef(false);
+
+  // Restore session on mount
+  useEffect(() => {
+    if (hasRestoredRef.current) return;
+    hasRestoredRef.current = true;
+
+    const restoreSession = async () => {
+      try {
+        const sessionData = await window.electronAPI.session.load();
+        if (sessionData && sessionData.terminals.length > 0) {
+          // Restore each terminal
+          for (const terminal of sessionData.terminals) {
+            // Create the PTY process
+            await window.electronAPI.terminal.create(terminal.id, terminal.cwd);
+            
+            // Dispatch to add terminal to state
+            dispatch({
+              type: 'ADD_TERMINAL',
+              payload: { id: terminal.id, label: terminal.label, cwd: terminal.cwd },
+            });
+
+            // Restore open files for this terminal
+            for (const file of terminal.openFiles) {
+              dispatch({
+                type: 'ADD_FILE',
+                payload: { terminalId: terminal.id, file },
+              });
+            }
+          }
+
+          // Restore active item selection
+          if (sessionData.activeItemId) {
+            dispatch({
+              type: 'SET_ACTIVE_ITEM',
+              payload: { 
+                id: sessionData.activeItemId, 
+                terminalId: sessionData.activeTerminalId ?? undefined 
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore session:', error);
+      }
+    };
+
+    restoreSession();
+  }, [dispatch]);
+
+  // Save session on close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.electronAPI.session.save({
+        terminals: state.terminals,
+        activeItemId: state.activeItemId,
+        activeTerminalId: state.activeTerminalId,
+      });
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [state]);
 
   const handleAddTerminal = async () => {
     const directory = await window.electronAPI.openDirectory();
