@@ -1,4 +1,4 @@
-# Multi-Repo Terminal
+# Vibe Playground
 
 A modern Electron-based terminal manager for working across multiple repositories simultaneously. Features a three-pane layout with integrated file browsing and syntax-highlighted file viewing.
 

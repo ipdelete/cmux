@@ -169,7 +169,7 @@ function AppContent() {
   return (
     <div className="app-container">
       <div className="title-bar">
-        <span className="title-bar-text">Multi-Repo Terminal</span>
+        <span className="title-bar-text">Vibe Playground</span>
       </div>
       <div className="app-content">
         <ThreePaneLayout
