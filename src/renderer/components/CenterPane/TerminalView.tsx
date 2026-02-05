@@ -16,6 +16,7 @@ export function TerminalView({ terminalId, cwd, isActive }: TerminalViewProps) {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const initializedRef = useRef(false);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced resize handler
   const handleResize = useCallback(() => {
@@ -67,7 +68,7 @@ export function TerminalView({ terminalId, cwd, isActive }: TerminalViewProps) {
     initializedRef.current = true;
 
     // Initial fit after a short delay to ensure container is ready
-    setTimeout(() => {
+    initTimeoutRef.current = setTimeout(() => {
       fitAddon.fit();
       // Create PTY in main process with correct size
       window.electronAPI.terminal.create(terminalId, cwd);
@@ -115,9 +116,16 @@ export function TerminalView({ terminalId, cwd, isActive }: TerminalViewProps) {
     });
 
     // Handle terminal output from main process
-    window.electronAPI.terminal.onData((id, data) => {
+    const cleanupOnData = window.electronAPI.terminal.onData((id, data) => {
       if (id === terminalId && xtermRef.current) {
         xtermRef.current.write(data);
+      }
+    });
+
+    // Handle terminal exit
+    const cleanupOnExit = window.electronAPI.terminal.onExit((id, exitCode) => {
+      if (id === terminalId) {
+        console.log(`Terminal ${terminalId} exited with code ${exitCode}`);
       }
     });
 
@@ -128,10 +136,29 @@ export function TerminalView({ terminalId, cwd, isActive }: TerminalViewProps) {
     resizeObserver.observe(terminalRef.current);
 
     return () => {
+      // Cancel pending init timeout to prevent double PTY creation
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+        initTimeoutRef.current = null;
+      }
+      
+      // Clean up IPC listeners
+      cleanupOnData();
+      cleanupOnExit();
+      
       resizeObserver.disconnect();
       if (resizeTimeoutRef.current) {
         clearTimeout(resizeTimeoutRef.current);
       }
+      
+      // Dispose xterm terminal
+      if (xtermRef.current) {
+        xtermRef.current.dispose();
+        xtermRef.current = null;
+      }
+      
+      // Reset initialization flag so terminal can be recreated if component remounts
+      initializedRef.current = false;
     };
   }, [terminalId, cwd, handleResize]);
 

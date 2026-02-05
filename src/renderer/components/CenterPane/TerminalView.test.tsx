@@ -42,13 +42,14 @@ describe('TerminalView', () => {
     jest.useFakeTimers();
     
     // Extend the existing electronAPI mock with our test-specific functions
+    // onData and onExit now return cleanup functions
     (window.electronAPI as any).terminal = {
       create: jest.fn().mockResolvedValue('test-id'),
       write: jest.fn().mockResolvedValue(undefined),
       resize: jest.fn().mockResolvedValue(undefined),
       kill: jest.fn().mockResolvedValue(undefined),
-      onData: jest.fn(),
-      onExit: jest.fn(),
+      onData: jest.fn().mockReturnValue(jest.fn()), // Returns cleanup function
+      onExit: jest.fn().mockReturnValue(jest.fn()), // Returns cleanup function
     };
   });
 

@@ -37,8 +37,8 @@ export interface ElectronAPI {
     write: (id: string, data: string) => Promise<void>;
     resize: (id: string, cols: number, rows: number) => Promise<void>;
     kill: (id: string) => Promise<void>;
-    onData: (callback: (id: string, data: string) => void) => void;
-    onExit: (callback: (id: string, exitCode: number) => void) => void;
+    onData: (callback: (id: string, data: string) => void) => () => void;
+    onExit: (callback: (id: string, exitCode: number) => void) => () => void;
   };
   fs: {
     readDirectory: (dirPath: string) => Promise<FileEntry[]>;
@@ -63,10 +63,22 @@ const electronAPI: ElectronAPI = {
     resize: (id, cols, rows) => ipcRenderer.invoke('terminal:resize', id, cols, rows),
     kill: (id) => ipcRenderer.invoke('terminal:kill', id),
     onData: (callback) => {
-      ipcRenderer.on('terminal:data', (_event, id, data) => callback(id, data));
+      const handler = (_event: Electron.IpcRendererEvent, id: string, data: string) => {
+        callback(id, data);
+      };
+      ipcRenderer.on('terminal:data', handler);
+      return () => {
+        ipcRenderer.removeListener('terminal:data', handler);
+      };
     },
     onExit: (callback) => {
-      ipcRenderer.on('terminal:exit', (_event, id, exitCode) => callback(id, exitCode));
+      const handler = (_event: Electron.IpcRendererEvent, id: string, exitCode: number) => {
+        callback(id, exitCode);
+      };
+      ipcRenderer.on('terminal:exit', handler);
+      return () => {
+        ipcRenderer.removeListener('terminal:exit', handler);
+      };
     },
   },
   fs: {
