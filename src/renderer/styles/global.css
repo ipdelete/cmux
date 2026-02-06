@@ -426,6 +426,44 @@ body {
   color: var(--error);
 }
 
+/* Git status colors for file tree */
+.file-tree-node.git-status-modified .file-name,
+.git-status-modified {
+  color: var(--git-modified);
+}
+
+.file-tree-node.git-status-added .file-name,
+.git-status-added {
+  color: var(--git-added);
+}
+
+.file-tree-node.git-status-deleted .file-name,
+.git-status-deleted {
+  color: var(--git-deleted);
+  text-decoration: line-through;
+}
+
+.file-tree-node.git-status-untracked .file-name,
+.git-status-untracked {
+  color: var(--git-untracked);
+}
+
+.file-tree-node.git-status-staged .file-name,
+.git-status-staged {
+  color: var(--git-staged);
+}
+
+.file-tree-node.git-status-renamed .file-name,
+.git-status-renamed {
+  color: var(--git-renamed);
+}
+
+.file-tree-node.git-status-ignored .file-name,
+.git-status-ignored {
+  color: var(--git-ignored);
+  opacity: 0.6;
+}
+
 /* Refresh button */
 .refresh-button {
   display: flex;

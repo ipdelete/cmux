@@ -13,6 +13,10 @@ export interface FileWatchEvent {
   filename: string | null;
 }
 
+// Git status types
+export type GitFileStatus = 'modified' | 'added' | 'deleted' | 'untracked' | 'ignored' | 'staged' | 'renamed';
+export type GitStatusMap = Record<string, GitFileStatus>;
+
 export interface SessionData {
   version: number;
   agents: Array<{
@@ -48,6 +52,14 @@ export interface ElectronAPI {
     unwatchDirectory: (dirPath: string) => Promise<void>;
     unwatchAll: () => Promise<void>;
     onDirectoryChanged: (callback: (event: FileWatchEvent) => void) => () => void;
+  };
+  git: {
+    isRepo: (dirPath: string) => Promise<boolean>;
+    getStatus: (dirPath: string) => Promise<GitStatusMap>;
+    getRoot: (dirPath: string) => Promise<string | null>;
+    watchRepo: (repoRoot: string) => Promise<boolean>;
+    unwatchRepo: (repoRoot: string) => Promise<void>;
+    onStatusChanged: (callback: (event: { repoRoot: string }) => void) => () => void;
   };
   session: {
     save: (data: Omit<SessionData, 'version'>) => Promise<void>;
@@ -103,6 +115,22 @@ const electronAPI: ElectronAPI = {
       // Return cleanup function
       return () => {
         ipcRenderer.removeListener('fs:directoryChanged', handler);
+      };
+    },
+  },
+  git: {
+    isRepo: (dirPath) => ipcRenderer.invoke('git:isRepo', dirPath),
+    getStatus: (dirPath) => ipcRenderer.invoke('git:getStatus', dirPath),
+    getRoot: (dirPath) => ipcRenderer.invoke('git:getRoot', dirPath),
+    watchRepo: (repoRoot) => ipcRenderer.invoke('git:watchRepo', repoRoot),
+    unwatchRepo: (repoRoot) => ipcRenderer.invoke('git:unwatchRepo', repoRoot),
+    onStatusChanged: (callback) => {
+      const handler = (_event: Electron.IpcRendererEvent, event: { repoRoot: string }) => {
+        callback(event);
+      };
+      ipcRenderer.on('git:statusChanged', handler);
+      return () => {
+        ipcRenderer.removeListener('git:statusChanged', handler);
       };
     },
   },

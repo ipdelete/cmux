@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Icon, getFileIcon } from '../Icon';
 
 interface FileEntry {
@@ -8,6 +8,20 @@ interface FileEntry {
   children?: FileEntry[];
 }
 
+type GitFileStatus = 'modified' | 'added' | 'deleted' | 'untracked' | 'ignored' | 'staged' | 'renamed';
+type GitStatusMap = Record<string, GitFileStatus>;
+
+// Priority order for folder status (lower = higher priority)
+const STATUS_PRIORITY: Record<GitFileStatus, number> = {
+  deleted: 1,
+  modified: 2,
+  staged: 3,
+  added: 4,
+  renamed: 5,
+  untracked: 6,
+  ignored: 7,
+};
+
 interface FileTreeNodeProps {
   entry: FileEntry;
   level: number;
@@ -16,6 +30,7 @@ interface FileTreeNodeProps {
   expandedDirs: Set<string>;
   loadChildren: (path: string) => Promise<FileEntry[]>;
   getChildren: (path: string) => FileEntry[];
+  gitStatusMap: GitStatusMap;
 }
 
 export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
@@ -26,10 +41,35 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   expandedDirs,
   loadChildren,
   getChildren,
+  gitStatusMap,
 }) => {
   const [loading, setLoading] = useState(false);
   const isExpanded = expandedDirs.has(entry.path);
   const children = getChildren(entry.path);
+
+  // Get git status for this file/folder
+  const gitStatus = useMemo(() => {
+    if (!entry.isDirectory) {
+      return gitStatusMap[entry.path];
+    }
+    // For directories, compute the "worst" status from children
+    let worstStatus: GitFileStatus | undefined;
+    let worstPriority = Infinity;
+    
+    for (const [filePath, status] of Object.entries(gitStatusMap)) {
+      // Check if this file is under this directory
+      if (filePath.startsWith(entry.path + '\\') || filePath.startsWith(entry.path + '/')) {
+        const priority = STATUS_PRIORITY[status];
+        if (priority < worstPriority) {
+          worstPriority = priority;
+          worstStatus = status;
+        }
+      }
+    }
+    return worstStatus;
+  }, [entry.path, entry.isDirectory, gitStatusMap]);
+
+  const statusClass = gitStatus ? `git-status-${gitStatus}` : '';
 
   // Load children when directory is expanded and not yet loaded
   useEffect(() => {
@@ -57,7 +97,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   return (
     <div>
       <div
-        className="file-tree-node"
+        className={`file-tree-node ${statusClass}`}
         style={{ paddingLeft: `${indent}px` }}
         onClick={handleClick}
         role="button"
@@ -76,7 +116,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
             <Icon name={getFileIcon(entry.name)} size="sm" />
           )}
         </span>
-        <span className="file-name">{entry.name}</span>
+        <span className={`file-name ${statusClass}`}>{entry.name}</span>
         {loading && <span className="loading">loading...</span>}
       </div>
       {entry.isDirectory && isExpanded && (
@@ -91,6 +131,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
               expandedDirs={expandedDirs}
               loadChildren={loadChildren}
               getChildren={getChildren}
+              gitStatusMap={gitStatusMap}
             />
           ))}
         </div>

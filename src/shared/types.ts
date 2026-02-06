@@ -63,3 +63,7 @@ export interface UpdateState {
   progress?: DownloadProgress;
   error?: string;
 }
+
+// Git status types
+export type GitFileStatus = 'modified' | 'added' | 'deleted' | 'untracked' | 'ignored' | 'staged' | 'renamed';
+export type GitStatusMap = Record<string, GitFileStatus>;

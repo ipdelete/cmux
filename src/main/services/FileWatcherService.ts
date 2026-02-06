@@ -8,13 +8,23 @@ export interface FileWatchEvent {
   filename: string | null;
 }
 
+export interface GitStatusChangeEvent {
+  type: 'git-status-changed';
+  repoRoot: string;
+}
+
 type WatcherCallback = (event: FileWatchEvent) => void;
+type GitStatusCallback = (event: GitStatusChangeEvent) => void;
 
 class FileWatcherService {
   private watchers: Map<string, fs.FSWatcher> = new Map();
+  private gitWatchers: Map<string, fs.FSWatcher> = new Map();
   private callbacks: Set<WatcherCallback> = new Set();
+  private gitCallbacks: Set<GitStatusCallback> = new Set();
   private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
+  private gitDebounceTimers: Map<string, NodeJS.Timeout> = new Map();
   private readonly DEBOUNCE_MS = 100;
+  private readonly GIT_DEBOUNCE_MS = 200;
 
   /**
    * Start watching a directory for changes
@@ -71,10 +81,20 @@ class FileWatcherService {
     }
     this.watchers.clear();
     
+    for (const watcher of this.gitWatchers.values()) {
+      watcher.close();
+    }
+    this.gitWatchers.clear();
+    
     for (const timer of this.debounceTimers.values()) {
       clearTimeout(timer);
     }
     this.debounceTimers.clear();
+    
+    for (const timer of this.gitDebounceTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.gitDebounceTimers.clear();
   }
 
   /**
@@ -99,6 +119,105 @@ class FileWatcherService {
    */
   getWatchedDirectories(): string[] {
     return Array.from(this.watchers.keys());
+  }
+
+  /**
+   * Start watching a git repository's index for status changes
+   */
+  watchGitRepo(repoRoot: string): boolean {
+    if (this.gitWatchers.has(repoRoot)) {
+      return true; // Already watching
+    }
+
+    try {
+      const gitDir = path.join(repoRoot, '.git');
+      
+      // Check if .git directory exists
+      if (!fs.existsSync(gitDir)) {
+        return false;
+      }
+
+      // Watch the .git directory for changes to index, HEAD, etc.
+      const watcher = fs.watch(gitDir, { persistent: false }, (eventType, filename) => {
+        // Only trigger on relevant git files
+        if (filename === 'index' || filename === 'HEAD' || filename?.startsWith('refs')) {
+          this.handleGitChange(repoRoot);
+        }
+      });
+
+      watcher.on('error', (err) => {
+        console.error(`Git watcher error for ${repoRoot}:`, err);
+        this.unwatchGitRepo(repoRoot);
+      });
+
+      this.gitWatchers.set(repoRoot, watcher);
+      return true;
+    } catch (err) {
+      console.error(`Failed to watch git repo ${repoRoot}:`, err);
+      return false;
+    }
+  }
+
+  /**
+   * Stop watching a git repository
+   */
+  unwatchGitRepo(repoRoot: string): void {
+    const watcher = this.gitWatchers.get(repoRoot);
+    if (watcher) {
+      watcher.close();
+      this.gitWatchers.delete(repoRoot);
+    }
+    
+    const timer = this.gitDebounceTimers.get(repoRoot);
+    if (timer) {
+      clearTimeout(timer);
+      this.gitDebounceTimers.delete(repoRoot);
+    }
+  }
+
+  /**
+   * Register a callback for git status change events
+   */
+  onGitStatusChanged(callback: GitStatusCallback): () => void {
+    this.gitCallbacks.add(callback);
+    return () => this.gitCallbacks.delete(callback);
+  }
+
+  /**
+   * Send git status change events to a specific browser window
+   */
+  sendGitStatusToWindow(window: BrowserWindow, event: GitStatusChangeEvent): void {
+    if (!window.isDestroyed()) {
+      window.webContents.send('git:statusChanged', event);
+    }
+  }
+
+  private handleGitChange(repoRoot: string): void {
+    // Debounce rapid git changes
+    const existingTimer = this.gitDebounceTimers.get(repoRoot);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      this.gitDebounceTimers.delete(repoRoot);
+      
+      const event: GitStatusChangeEvent = {
+        type: 'git-status-changed',
+        repoRoot,
+      };
+
+      // Notify all registered callbacks
+      for (const callback of this.gitCallbacks) {
+        try {
+          callback(event);
+        } catch (err) {
+          console.error('Error in git status callback:', err);
+        }
+      }
+    }, this.GIT_DEBOUNCE_MS);
+
+    this.gitDebounceTimers.set(repoRoot, timer);
   }
 
   private handleFileChange(directory: string, eventType: string, filename: string | null): void {

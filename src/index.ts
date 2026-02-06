@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { setupAgentIPC } from './main/ipc/agent';
 import { setupFileIPC } from './main/ipc/files';
+import { setupGitIPC } from './main/ipc/git';
 import { setupSessionIPC } from './main/ipc/session';
 import { setupUpdatesIPC, getUpdateService } from './main/ipc/updates';
 
@@ -40,6 +41,9 @@ const createWindow = (): void => {
   
   // Set up file system IPC handlers
   setupFileIPC();
+
+  // Set up git IPC handlers
+  setupGitIPC();
 
   // Set up session IPC handlers
   setupSessionIPC();

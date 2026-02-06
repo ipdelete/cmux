@@ -14,6 +14,9 @@ interface FileWatchEvent {
   filename: string | null;
 }
 
+type GitFileStatus = 'modified' | 'added' | 'deleted' | 'untracked' | 'ignored' | 'staged' | 'renamed';
+type GitStatusMap = Record<string, GitFileStatus>;
+
 interface FileTreeProps {
   rootPath: string;
   onFileClick: (filePath: string) => void;
@@ -25,6 +28,8 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [gitStatusMap, setGitStatusMap] = useState<GitStatusMap>({});
+  const [isGitRepo, setIsGitRepo] = useState(false);
   const watchedDirsRef = useRef<Set<string>>(new Set());
   const childrenCacheRef = useRef<Map<string, FileEntry[]>>(new Map());
 
@@ -48,6 +53,24 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
     setExpandedDirs(prev => new Set(prev));
   }, [loadDirectory, rootPath]);
 
+  // Load git status for the repository
+  const loadGitStatus = useCallback(async () => {
+    if (!rootPath) return;
+    try {
+      const isRepo = await window.electronAPI.git.isRepo(rootPath);
+      setIsGitRepo(isRepo);
+      if (isRepo) {
+        const status = await window.electronAPI.git.getStatus(rootPath);
+        setGitStatusMap(status);
+      } else {
+        setGitStatusMap({});
+      }
+    } catch (err) {
+      console.error('Error loading git status:', err);
+      setGitStatusMap({});
+    }
+  }, [rootPath]);
+
   // Load root directory
   useEffect(() => {
     const loadRoot = async () => {
@@ -66,22 +89,24 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
 
     if (rootPath) {
       loadRoot();
+      loadGitStatus();
       setExpandedDirs(new Set());
       watchedDirsRef.current.clear();
       childrenCacheRef.current.clear();
     }
-  }, [rootPath, loadDirectory]);
+  }, [rootPath, loadDirectory, loadGitStatus]);
 
   // Handle manual refresh trigger
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
       refreshDirectory(rootPath);
+      loadGitStatus();
       // Also refresh expanded directories
       for (const dir of expandedDirs) {
         loadDirectory(dir);
       }
     }
-  }, [refreshTrigger, rootPath, refreshDirectory, expandedDirs, loadDirectory]);
+  }, [refreshTrigger, rootPath, refreshDirectory, expandedDirs, loadDirectory, loadGitStatus]);
 
   // Set up file watching
   useEffect(() => {
@@ -108,6 +133,36 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
       watchedDirsRef.current.clear();
     };
   }, [rootPath, refreshDirectory]);
+
+  // Set up git status watching
+  useEffect(() => {
+    if (!rootPath || !isGitRepo) return;
+
+    let gitRoot: string | null = null;
+
+    const setupGitWatch = async () => {
+      gitRoot = await window.electronAPI.git.getRoot(rootPath);
+      if (gitRoot) {
+        window.electronAPI.git.watchRepo(gitRoot);
+      }
+    };
+
+    setupGitWatch();
+
+    // Subscribe to git status change events
+    const cleanup = window.electronAPI.git.onStatusChanged((event) => {
+      if (gitRoot && event.repoRoot === gitRoot) {
+        loadGitStatus();
+      }
+    });
+
+    return () => {
+      cleanup();
+      if (gitRoot) {
+        window.electronAPI.git.unwatchRepo(gitRoot);
+      }
+    };
+  }, [rootPath, isGitRepo, loadGitStatus]);
 
   const handleDirectoryToggle = useCallback((path: string, isExpanded: boolean) => {
     setExpandedDirs((prev) => {
@@ -163,6 +218,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
           expandedDirs={expandedDirs}
           loadChildren={loadChildren}
           getChildren={getChildren}
+          gitStatusMap={gitStatusMap}
         />
       ))}
     </div>
