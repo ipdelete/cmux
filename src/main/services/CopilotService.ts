@@ -1,10 +1,19 @@
-import { CopilotClient, CopilotSession } from '@github/copilot-sdk';
+// Dynamic import for ESM-only @github/copilot-sdk in CJS Electron main process
+// The webpack magic comment prevents webpack from trying to bundle the ESM module
+type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
+type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
+
+async function loadSdk() {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+  return new Function('return import("@github/copilot-sdk")')() as Promise<typeof import('@github/copilot-sdk')>;
+}
 
 export class CopilotService {
-  private client: CopilotClient | null = null;
-  private session: CopilotSession | null = null;
+  private client: CopilotClientType | null = null;
+  private session: CopilotSessionType | null = null;
 
   async start(): Promise<void> {
+    const { CopilotClient } = await loadSdk();
     this.client = new CopilotClient();
     await this.client.start();
   }
