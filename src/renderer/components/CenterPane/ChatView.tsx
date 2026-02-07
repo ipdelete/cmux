@@ -13,6 +13,13 @@ export function ChatView() {
     messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' });
   }, [state.chatMessages]);
 
+  // Refocus input when response completes
+  useEffect(() => {
+    if (!state.chatLoading) {
+      inputRef.current?.focus();
+    }
+  }, [state.chatLoading]);
+
   // Listen for streaming chunks from main process
   useEffect(() => {
     const cleanupChunk = window.electronAPI.copilot.onChunk((messageId, content) => {
