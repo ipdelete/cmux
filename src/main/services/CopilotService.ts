@@ -1,5 +1,4 @@
 // Dynamic import for ESM-only @github/copilot-sdk in CJS Electron main process
-// The webpack magic comment prevents webpack from trying to bundle the ESM module
 type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
 type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
 
@@ -22,7 +21,7 @@ export class CopilotService {
     prompt: string,
     messageId: string,
     onChunk: (messageId: string, content: string) => void,
-    onDone: (messageId: string) => void,
+    onDone: (messageId: string, fullContent?: string) => void,
     onError: (messageId: string, error: string) => void,
   ): Promise<void> {
     try {
@@ -34,21 +33,25 @@ export class CopilotService {
         this.session = await this.client!.createSession();
       }
 
-      this.session.on('assistant.message_delta', (event) => {
+      let receivedChunks = false;
+
+      // Stream deltas as they arrive
+      const unsubDelta = this.session.on('assistant.message_delta', (event) => {
+        receivedChunks = true;
         onChunk(messageId, event.data.deltaContent);
       });
 
-      const unsubIdle = this.session.on('session.idle', () => {
-        onDone(messageId);
-        unsubIdle();
-      });
+      // sendAndWait blocks until the full response is ready
+      const response = await this.session.sendAndWait({ prompt });
 
-      const unsubError = this.session.on('session.error', (event) => {
-        onError(messageId, event.data.message);
-        unsubError();
-      });
+      unsubDelta();
 
-      await this.session.send({ prompt });
+      // If no streaming chunks were received, send the full response content
+      if (!receivedChunks && response?.data.content) {
+        onChunk(messageId, response.data.content);
+      }
+
+      onDone(messageId);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       onError(messageId, message);
