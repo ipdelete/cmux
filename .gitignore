@@ -103,3 +103,4 @@ playwright-report/
 
 # Build
 dist/
+index.js

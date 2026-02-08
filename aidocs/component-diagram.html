@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vibe Playground — Component Diagram</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; padding: 32px; }
+  h1 { color: #f0f6fc; font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 13px; margin-bottom: 28px; }
+  svg { display: block; margin: 0 auto; }
+  .layer-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+  .box-label { font-size: 12px; font-weight: 600; }
+  .box-detail { font-size: 10px; }
+  .arrow-label { font-size: 9.5px; }
+  .legend { margin-top: 24px; display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8b949e; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1>Vibe Playground — Component Diagram</h1>
+<p class="subtitle">Chat orchestration, SDK agents, and terminal agents</p>
+
+<svg viewBox="0 0 920 720" width="920" height="720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#8b949e" stroke-width="1.2"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#d29922" stroke-width="1.2"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#bc8cff" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════════════ RENDERER LAYER ═══════════════════ -->
+  <rect x="20" y="20" width="880" height="155" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="36" y="42" class="layer-label" fill="#8b949e">Renderer (React)</text>
+
+  <!-- LeftPane -->
+  <rect x="40" y="56" width="150" height="105" rx="6" fill="#1c2333" stroke="#388bfd44" stroke-width="1"/>
+  <text x="115" y="76" text-anchor="middle" class="box-label" fill="#58a6ff">LeftPane</text>
+  <text x="115" y="92" text-anchor="middle" class="box-detail" fill="#8b949e">Agent list</text>
+  <text x="115" y="105" text-anchor="middle" class="box-detail" fill="#8b949e">Chat entry</text>
+  <text x="115" y="118" text-anchor="middle" class="box-detail" fill="#8b949e">Status dots</text>
+  <text x="115" y="131" text-anchor="middle" class="box-detail" fill="#8b949e">Copilot icon (SDK)</text>
+  <text x="115" y="144" text-anchor="middle" class="box-detail" fill="#8b949e">Terminal icon (PTY)</text>
+
+  <!-- ChatView -->
+  <rect x="210" y="56" width="155" height="105" rx="6" fill="#1c2333" stroke="#388bfd44" stroke-width="1"/>
+  <text x="287" y="76" text-anchor="middle" class="box-label" fill="#58a6ff">ChatView</text>
+  <text x="287" y="92" text-anchor="middle" class="box-detail" fill="#8b949e">Message input</text>
+  <text x="287" y="105" text-anchor="middle" class="box-detail" fill="#8b949e">Streamed responses</text>
+  <text x="287" y="118" text-anchor="middle" class="box-detail" fill="#8b949e">Model picker</text>
+  <text x="287" y="131" text-anchor="middle" class="box-detail" fill="#8b949e">Conversation list</text>
+
+  <!-- AgentActivityView -->
+  <rect x="385" y="56" width="175" height="105" rx="6" fill="#1c2333" stroke="#2ea04366" stroke-width="1"/>
+  <text x="472" y="76" text-anchor="middle" class="box-label" fill="#3fb950">AgentActivityView</text>
+  <text x="472" y="92" text-anchor="middle" class="box-detail" fill="#8b949e">Card-based feed</text>
+  <text x="472" y="105" text-anchor="middle" class="box-detail" fill="#8b949e">Tool call cards</text>
+  <text x="472" y="118" text-anchor="middle" class="box-detail" fill="#8b949e">Assistant messages</text>
+  <text x="472" y="131" text-anchor="middle" class="box-detail" fill="#8b949e">Error / Done cards</text>
+
+  <!-- AgentView (terminal) -->
+  <rect x="580" y="56" width="155" height="105" rx="6" fill="#1c2333" stroke="#d2992244" stroke-width="1"/>
+  <text x="657" y="76" text-anchor="middle" class="box-label" fill="#d29922">AgentView</text>
+  <text x="657" y="92" text-anchor="middle" class="box-detail" fill="#8b949e">xterm.js terminal</text>
+  <text x="657" y="105" text-anchor="middle" class="box-detail" fill="#8b949e">Full PTY shell</text>
+  <text x="657" y="118" text-anchor="middle" class="box-detail" fill="#8b949e">Manual agents only</text>
+
+  <!-- RightPane -->
+  <rect x="755" y="56" width="130" height="105" rx="6" fill="#1c2333" stroke="#30363d" stroke-width="1"/>
+  <text x="820" y="76" text-anchor="middle" class="box-label" fill="#8b949e">RightPane</text>
+  <text x="820" y="92" text-anchor="middle" class="box-detail" fill="#8b949e">File tree</text>
+  <text x="820" y="105" text-anchor="middle" class="box-detail" fill="#8b949e">Conversation list</text>
+
+  <!-- ═══════════════════ IPC BRIDGE ═══════════════════ -->
+  <line x1="60" y1="190" x2="860" y2="190" stroke="#30363d" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="460" y="186" text-anchor="middle" class="layer-label" fill="#6e7681">IPC Bridge (preload.ts)</text>
+
+  <!-- ═══════════════════ MAIN PROCESS LAYER ═══════════════════ -->
+  <rect x="20" y="205" width="880" height="265" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="36" y="227" class="layer-label" fill="#8b949e">Main Process (Electron / Node.js)</text>
+
+  <!-- CopilotService -->
+  <rect x="40" y="242" width="195" height="90" rx="6" fill="#1c2333" stroke="#388bfd44" stroke-width="1"/>
+  <text x="137" y="262" text-anchor="middle" class="box-label" fill="#58a6ff">CopilotService</text>
+  <text x="137" y="278" text-anchor="middle" class="box-detail" fill="#8b949e">Chat session management</text>
+  <text x="137" y="291" text-anchor="middle" class="box-detail" fill="#8b949e">Registers orchestrator tools</text>
+  <text x="137" y="304" text-anchor="middle" class="box-detail" fill="#8b949e">Streams responses to renderer</text>
+  <text x="137" y="317" text-anchor="middle" class="box-detail" fill="#8b949e">Auto-approves permissions</text>
+
+  <!-- OrchestratorTools -->
+  <rect x="255" y="242" width="195" height="90" rx="6" fill="#1c2333" stroke="#bc8cff44" stroke-width="1"/>
+  <text x="352" y="262" text-anchor="middle" class="box-label" fill="#bc8cff">OrchestratorTools</text>
+  <text x="352" y="280" text-anchor="middle" class="box-detail" fill="#8b949e">vp_create_agent</text>
+  <text x="352" y="293" text-anchor="middle" class="box-detail" fill="#8b949e">vp_send_to_agent</text>
+  <text x="352" y="306" text-anchor="middle" class="box-detail" fill="#8b949e">vp_list_agents</text>
+  <text x="352" y="319" text-anchor="middle" class="box-detail" fill="#8b949e">Validates paths, routes prompts</text>
+
+  <!-- AgentSessionService -->
+  <rect x="470" y="242" width="195" height="90" rx="6" fill="#1c2333" stroke="#2ea04366" stroke-width="1"/>
+  <text x="567" y="262" text-anchor="middle" class="box-label" fill="#3fb950">AgentSessionService</text>
+  <text x="567" y="278" text-anchor="middle" class="box-detail" fill="#8b949e">Per-agent SDK sessions</text>
+  <text x="567" y="291" text-anchor="middle" class="box-detail" fill="#8b949e">SDK event -> AgentEvent</text>
+  <text x="567" y="304" text-anchor="middle" class="box-detail" fill="#8b949e">workingDirectory scoping</text>
+  <text x="567" y="317" text-anchor="middle" class="box-detail" fill="#8b949e">Auto-approves permissions</text>
+
+  <!-- AgentService -->
+  <rect x="685" y="242" width="195" height="90" rx="6" fill="#1c2333" stroke="#d2992244" stroke-width="1"/>
+  <text x="782" y="262" text-anchor="middle" class="box-label" fill="#d29922">AgentService</text>
+  <text x="782" y="278" text-anchor="middle" class="box-detail" fill="#8b949e">PTY management (node-pty)</text>
+  <text x="782" y="291" text-anchor="middle" class="box-detail" fill="#8b949e">Terminal I/O</text>
+  <text x="782" y="304" text-anchor="middle" class="box-detail" fill="#8b949e">Manual terminal agents</text>
+  <text x="782" y="317" text-anchor="middle" class="box-detail" fill="#8b949e">Resize, write, destroy</text>
+
+  <!-- SdkLoader -->
+  <rect x="200" y="365" width="320" height="90" rx="6" fill="#1c2333" stroke="#f778ba44" stroke-width="1.5"/>
+  <text x="360" y="385" text-anchor="middle" class="box-label" fill="#f778ba">SdkLoader (singleton)</text>
+  <text x="360" y="403" text-anchor="middle" class="box-detail" fill="#8b949e">Single CopilotClient instance</text>
+  <text x="360" y="416" text-anchor="middle" class="box-detail" fill="#8b949e">import("@github/copilot-sdk") -- ESM workaround</text>
+  <text x="360" y="429" text-anchor="middle" class="box-detail" fill="#8b949e">Shared by CopilotService + AgentSessionService</text>
+  <text x="360" y="442" text-anchor="middle" class="box-detail" fill="#8b949e">Manages client lifecycle + error recovery</text>
+
+  <!-- ConversationService -->
+  <rect x="570" y="365" width="195" height="55" rx="6" fill="#1c2333" stroke="#30363d" stroke-width="1"/>
+  <text x="667" y="385" text-anchor="middle" class="box-label" fill="#8b949e">ConversationService</text>
+  <text x="667" y="401" text-anchor="middle" class="box-detail" fill="#8b949e">Chat persistence to disk</text>
+  <text x="667" y="414" text-anchor="middle" class="box-detail" fill="#8b949e">CRUD conversations</text>
+
+  <!-- ═══════════════════ ARROWS: Renderer → Main ═══════════════════ -->
+  <!-- ChatView → CopilotService -->
+  <line x1="287" y1="161" x2="137" y2="242" stroke="#58a6ff" stroke-width="1.2" marker-end="url(#arrow-blue)"/>
+  <text x="195" y="198" class="arrow-label" fill="#58a6ff" transform="rotate(-20,195,198)">sendMessage</text>
+
+  <!-- AgentActivityView → AgentSessionService -->
+  <line x1="472" y1="161" x2="567" y2="242" stroke="#3fb950" stroke-width="1.2" marker-end="url(#arrow-green)"/>
+  <text x="535" y="198" class="arrow-label" fill="#3fb950" transform="rotate(18,535,198)">events</text>
+
+  <!-- AgentView → AgentService -->
+  <line x1="657" y1="161" x2="782" y2="242" stroke="#d29922" stroke-width="1.2" marker-end="url(#arrow-orange)"/>
+  <text x="735" y="196" class="arrow-label" fill="#d29922" transform="rotate(18,735,196)">PTY I/O</text>
+
+  <!-- ═══════════════════ ARROWS: Main internal ═══════════════════ -->
+  <!-- CopilotService → OrchestratorTools -->
+  <line x1="235" y1="270" x2="255" y2="270" stroke="#bc8cff" stroke-width="1.2" marker-end="url(#arrow-purple)"/>
+
+  <!-- OrchestratorTools → AgentSessionService -->
+  <line x1="450" y1="287" x2="470" y2="287" stroke="#bc8cff" stroke-width="1.2" marker-end="url(#arrow-purple)"/>
+  <text x="460" y="280" text-anchor="middle" class="arrow-label" fill="#bc8cff">create/send</text>
+
+  <!-- CopilotService → SdkLoader -->
+  <line x1="137" y1="332" x2="260" y2="380" stroke="#f778ba" stroke-width="1.2" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
+  <text x="175" y="360" class="arrow-label" fill="#f778ba">getClient()</text>
+
+  <!-- AgentSessionService → SdkLoader -->
+  <line x1="567" y1="332" x2="460" y2="380" stroke="#f778ba" stroke-width="1.2" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
+  <text x="530" y="360" class="arrow-label" fill="#f778ba">getClient()</text>
+
+  <!-- ═══════════════════ EXTERNAL PROCESS LAYER ═══════════════════ -->
+  <rect x="20" y="500" width="880" height="200" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="36" y="522" class="layer-label" fill="#8b949e">External Process (spawned by SDK)</text>
+
+  <!-- @github/copilot-sdk (bundled) -->
+  <rect x="120" y="540" width="260" height="70" rx="6" fill="#1c2333" stroke="#f778ba66" stroke-width="1.5"/>
+  <text x="250" y="562" text-anchor="middle" class="box-label" fill="#f778ba">@github/copilot-sdk</text>
+  <text x="250" y="578" text-anchor="middle" class="box-detail" fill="#8b949e">CopilotClient + CopilotSession</text>
+  <text x="250" y="591" text-anchor="middle" class="box-detail" fill="#8b949e">Bundled into webpack main output</text>
+  <text x="250" y="604" text-anchor="middle" class="box-detail" fill="#8b949e">(ESM-only, needs build-time conversion)</text>
+
+  <!-- spawn arrow -->
+  <line x1="380" y1="575" x2="500" y2="575" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="440" y="567" text-anchor="middle" class="arrow-label" fill="#3fb950">child_process.spawn()</text>
+  <text x="440" y="580" text-anchor="middle" class="arrow-label" fill="#8b949e">JSON-RPC over stdio</text>
+
+  <!-- @github/copilot CLI -->
+  <rect x="500" y="540" width="280" height="70" rx="6" fill="#1c2333" stroke="#3fb95066" stroke-width="1.5"/>
+  <text x="640" y="562" text-anchor="middle" class="box-label" fill="#3fb950">@github/copilot (CLI process)</text>
+  <text x="640" y="578" text-anchor="middle" class="box-detail" fill="#8b949e">Copilot agent runtime</text>
+  <text x="640" y="591" text-anchor="middle" class="box-detail" fill="#8b949e">--headless --stdio --no-auto-update</text>
+  <text x="640" y="604" text-anchor="middle" class="box-detail" fill="#8b949e">Must exist on real filesystem (not in asar)</text>
+
+  <!-- SdkLoader → SDK -->
+  <line x1="360" y1="455" x2="250" y2="540" stroke="#f778ba" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="5,3"/>
+  <text x="280" y="494" class="arrow-label" fill="#f778ba">import (bundled)</text>
+
+  <!-- CLI resolution -->
+  <rect x="160" y="640" width="620" height="45" rx="6" fill="#21262d" stroke="#f8514966" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="470" y="658" text-anchor="middle" class="box-detail" fill="#f85149">CLI Resolution: import.meta.resolve("@github/copilot/sdk")</text>
+  <text x="470" y="672" text-anchor="middle" class="box-detail" fill="#f85149">Fails in packaged app -- needs explicit cliPath to unpacked location</text>
+
+  <!-- arrow from SDK to resolution note -->
+  <line x1="250" y1="610" x2="400" y2="640" stroke="#f85149" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- GitHub API cloud -->
+  <rect x="800" y="550" width="85" height="50" rx="20" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="842" y="572" text-anchor="middle" class="box-detail" fill="#8b949e">GitHub</text>
+  <text x="842" y="585" text-anchor="middle" class="box-detail" fill="#8b949e">Copilot API</text>
+  <line x1="780" y1="575" x2="800" y2="575" stroke="#8b949e" stroke-width="1" marker-end="url(#arrow)"/>
+</svg>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#58a6ff"></div>Chat flow</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#3fb950"></div>SDK agent flow</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#d29922"></div>PTY terminal flow</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#bc8cff"></div>Orchestrator tools</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#f778ba"></div>SDK singleton / import</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#f85149"></div>Packaging issue</div>
+</div>
+
+</body>
+</html>
