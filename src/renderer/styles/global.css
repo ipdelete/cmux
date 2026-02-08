@@ -988,7 +988,8 @@ kbd {
 .activity-card {
   border-radius: var(--radius-md);
   background-color: var(--bg-elevated);
-  border: 1px solid var(--border-muted);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
   overflow: hidden;
   transition: border-color var(--transition-base);
 }
@@ -998,8 +999,8 @@ kbd {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  font-size: var(--text-base);
+  color: var(--text-primary);
 }
 
 .activity-card-title {
@@ -1016,8 +1017,8 @@ kbd {
 
 .activity-code {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-primary);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   background-color: var(--bg-deep);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -1029,8 +1030,8 @@ kbd {
 
 .activity-pre {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
   background-color: var(--bg-deep);
   padding: var(--space-2);
   border-radius: var(--radius-sm);
@@ -1043,7 +1044,7 @@ kbd {
 }
 
 .activity-text {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--text-primary);
   line-height: var(--leading-normal);
   white-space: pre-wrap;
@@ -1052,7 +1053,7 @@ kbd {
 
 /* Tool start — subtle left border */
 .activity-card-tool-start {
-  border-left: 2px solid var(--accent);
+  border-left: 3px solid var(--accent);
 }
 
 .activity-card-tool-start .activity-card-header .codicon {
@@ -1060,8 +1061,16 @@ kbd {
 }
 
 /* Tool complete — success/failure variants */
+.activity-card-tool-complete {
+  border-left: 3px solid var(--accent);
+}
+
+.activity-card-tool-complete .activity-card-header .codicon {
+  color: var(--accent);
+}
+
 .activity-card-tool-complete.success {
-  border-left: 2px solid var(--success);
+  border-left: 3px solid var(--success);
 }
 
 .activity-card-tool-complete.success .codicon {
@@ -1069,7 +1078,7 @@ kbd {
 }
 
 .activity-card-tool-complete.failure {
-  border-left: 2px solid var(--error);
+  border-left: 3px solid var(--error);
 }
 
 .activity-card-tool-complete.failure .codicon {
@@ -1078,7 +1087,8 @@ kbd {
 
 /* Assistant message */
 .activity-card-assistant {
-  border-left: 2px solid var(--accent-muted);
+  border-left: 3px solid var(--accent-muted);
+  background-color: rgba(88, 166, 255, 0.04);
 }
 
 .activity-card-assistant .activity-card-header .codicon {
@@ -1087,7 +1097,7 @@ kbd {
 
 /* Error */
 .activity-card-error {
-  border-left: 2px solid var(--error);
+  border-left: 3px solid var(--error);
   background-color: rgba(248, 81, 73, 0.06);
 }
 
@@ -1097,11 +1107,15 @@ kbd {
 
 /* Sub-agent */
 .activity-card-subagent {
-  border-left: 2px solid var(--warning);
+  border-left: 3px solid var(--warning);
 }
 
 .activity-card-subagent .activity-card-header .codicon {
   color: var(--warning);
+}
+
+.activity-card-subagent.success {
+  border-left: 3px solid var(--success);
 }
 
 .activity-card-subagent.success .activity-card-header .codicon {
@@ -1110,7 +1124,7 @@ kbd {
 
 /* Idle / done */
 .activity-card-idle {
-  border-left: 2px solid var(--success);
+  border-left: 3px solid var(--success);
   background-color: rgba(63, 185, 80, 0.06);
 }
 
