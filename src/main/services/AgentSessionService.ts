@@ -72,7 +72,9 @@ class AgentSessionService {
   async sendPrompt(agentId: string, prompt: string): Promise<void> {
     const entry = this.sessions.get(agentId);
     if (!entry) throw new Error(`No session for agent ${agentId}`);
-    await entry.session.sendAndWait({ prompt });
+    // Use send() (non-blocking) so the orchestrator tool handler returns quickly.
+    // The activity feed shows progress via session events.
+    await entry.session.send({ prompt });
   }
 
   async stopAgent(agentId: string): Promise<void> {
@@ -110,7 +112,9 @@ class AgentSessionService {
           kind: 'tool-start',
           toolCallId: event.data.toolCallId,
           toolName: event.data.toolName,
-          arguments: event.data.arguments,
+          arguments: typeof event.data.arguments === 'string'
+            ? event.data.arguments
+            : event.data.arguments ? JSON.stringify(event.data.arguments) : undefined,
           timestamp: ts,
         };
 
@@ -120,8 +124,8 @@ class AgentSessionService {
           toolCallId: event.data.toolCallId,
           toolName: (event.data as { toolName?: string }).toolName ?? 'unknown',
           success: event.data.success,
-          result: event.data.result,
-          error: event.data.error,
+          result: event.data.result?.content,
+          error: event.data.error?.message,
           timestamp: ts,
         };
 
