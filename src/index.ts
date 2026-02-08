@@ -6,6 +6,9 @@ import { setupSessionIPC } from './main/ipc/session';
 import { setupUpdatesIPC, getUpdateService } from './main/ipc/updates';
 import { setupCopilotIPC, getCopilotService } from './main/ipc/copilot';
 import { setupConversationIPC } from './main/ipc/conversation';
+import { setupAgentSessionIPC } from './main/ipc/agent-session';
+import { stopSharedClient } from './main/services/SdkLoader';
+import { agentSessionService } from './main/services/AgentSessionService';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -59,6 +62,9 @@ const createWindow = (): void => {
   // Set up conversation persistence IPC handlers
   setupConversationIPC();
 
+  // Set up agent session (SDK-driven) IPC handlers
+  setupAgentSessionIPC(mainWindow);
+
   // Check for updates after window is ready (give it a moment to load)
   mainWindow.webContents.once('did-finish-load', () => {
     setTimeout(() => {
@@ -80,6 +86,8 @@ app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
   getCopilotService().stop().catch(() => {});
+  agentSessionService.destroyAll().catch(() => {});
+  stopSharedClient().catch(() => {});
   if (process.platform !== 'darwin') {
     app.quit();
   }

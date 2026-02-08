@@ -29,6 +29,7 @@ export interface SessionData {
       name: string;
       parentAgentId: string;
     }>;
+    hasSession?: boolean;
   }>;
   activeItemId: string | null;
   activeAgentId: string | null;
@@ -87,6 +88,16 @@ export interface ElectronAPI {
     onChunk: (callback: (messageId: string, content: string) => void) => () => void;
     onDone: (callback: (messageId: string) => void) => () => void;
     onError: (callback: (messageId: string, error: string) => void) => () => void;
+  };
+  agentSession: {
+    create: (agentId: string, cwd: string, model?: string) => Promise<void>;
+    send: (agentId: string, prompt: string) => Promise<void>;
+    stop: (agentId: string) => Promise<void>;
+    destroy: (agentId: string) => Promise<void>;
+    onEvent: (callback: (agentId: string, event: unknown) => void) => () => void;
+    onPermissionRequest: (callback: (agentId: string, request: { toolCallId?: string; kind: string }) => void) => () => void;
+    respondPermission: (agentId: string, toolCallId: string, decision: string) => Promise<void>;
+    onAgentCreated: (callback: (info: { agentId: string; label: string; cwd: string }) => void) => () => void;
   };
 }
 
@@ -213,6 +224,41 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on('copilot:error', handler);
       return () => {
         ipcRenderer.removeListener('copilot:error', handler);
+      };
+    },
+  },
+  agentSession: {
+    create: (agentId, cwd, model) => ipcRenderer.invoke('agent-session:create', agentId, cwd, model),
+    send: (agentId, prompt) => ipcRenderer.invoke('agent-session:send', agentId, prompt),
+    stop: (agentId) => ipcRenderer.invoke('agent-session:stop', agentId),
+    destroy: (agentId) => ipcRenderer.invoke('agent-session:destroy', agentId),
+    onEvent: (callback) => {
+      const handler = (_event: Electron.IpcRendererEvent, agentId: string, event: unknown) => {
+        callback(agentId, event);
+      };
+      ipcRenderer.on('agent-session:event', handler);
+      return () => {
+        ipcRenderer.removeListener('agent-session:event', handler);
+      };
+    },
+    onPermissionRequest: (callback) => {
+      const handler = (_event: Electron.IpcRendererEvent, agentId: string, request: { toolCallId?: string; kind: string }) => {
+        callback(agentId, request);
+      };
+      ipcRenderer.on('agent-session:permission-request', handler);
+      return () => {
+        ipcRenderer.removeListener('agent-session:permission-request', handler);
+      };
+    },
+    respondPermission: (agentId, toolCallId, decision) =>
+      ipcRenderer.invoke('agent-session:permission-respond', agentId, toolCallId, decision),
+    onAgentCreated: (callback) => {
+      const handler = (_event: Electron.IpcRendererEvent, info: { agentId: string; label: string; cwd: string }) => {
+        callback(info);
+      };
+      ipcRenderer.on('orchestrator:agent-created', handler);
+      return () => {
+        ipcRenderer.removeListener('orchestrator:agent-created', handler);
       };
     },
   },

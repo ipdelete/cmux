@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { createContext, useContext, useReducer, ReactNode } from 'react';
-import { AppState, AppAction, Agent } from '../../shared/types';
+import { AppState, AppAction, Agent, AgentEvent, AgentStatus } from '../../shared/types';
 
 export const initialState: AppState = {
   agents: [],
@@ -13,6 +13,7 @@ export const initialState: AppState = {
   chatLoading: false,
   availableModels: [],
   selectedModel: null,
+  agentEvents: {},
 };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -24,6 +25,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         cwd: action.payload.cwd,
         openFiles: [],
         isWorktree: action.payload.isWorktree,
+        hasSession: action.payload.hasSession,
+        status: action.payload.hasSession ? 'idle' : undefined,
       };
       return {
         ...state,
@@ -40,12 +43,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ? filteredAgents[0]?.id ?? null
         : state.activeAgentId;
       const newActiveItemId = wasActive ? newActiveAgentId : state.activeItemId;
+      const { [action.payload.id]: _, ...remainingEvents } = state.agentEvents;
 
       return {
         ...state,
         agents: filteredAgents,
         activeItemId: newActiveItemId,
         activeAgentId: newActiveAgentId,
+        agentEvents: remainingEvents,
       };
     }
 
@@ -196,6 +201,47 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         selectedModel: action.payload.model,
+      };
+    }
+
+    case 'ADD_AGENT_EVENT': {
+      const existing = state.agentEvents[action.payload.agentId] ?? [];
+      return {
+        ...state,
+        agentEvents: {
+          ...state.agentEvents,
+          [action.payload.agentId]: [...existing, action.payload.event],
+        },
+      };
+    }
+
+    case 'SET_AGENT_STATUS': {
+      return {
+        ...state,
+        agents: state.agents.map(a =>
+          a.id === action.payload.agentId ? { ...a, status: action.payload.status } : a
+        ),
+      };
+    }
+
+    case 'CLEAR_AGENT_EVENTS': {
+      return {
+        ...state,
+        agentEvents: {
+          ...state.agentEvents,
+          [action.payload.agentId]: [],
+        },
+      };
+    }
+
+    case 'SET_AGENT_HAS_SESSION': {
+      return {
+        ...state,
+        agents: state.agents.map(a =>
+          a.id === action.payload.agentId
+            ? { ...a, hasSession: action.payload.hasSession, status: action.payload.hasSession ? 'idle' : undefined }
+            : a
+        ),
       };
     }
 

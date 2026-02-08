@@ -8,7 +8,7 @@ import { HotkeyHelp } from './components/HotkeyHelp';
 import { UpdateToast } from './components/UpdateToast';
 import { AppStateProvider, useAppState, getActiveItem } from './contexts/AppStateContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { UpdateState } from '../shared/types';
+import { UpdateState, AgentEvent } from '../shared/types';
 
 function AppContent() {
   const { state, dispatch } = useAppState();
@@ -59,6 +59,46 @@ function AppContent() {
     setIsUpdateDismissed(true);
   }, []);
 
+  // Listen for agent session events from main process
+  useEffect(() => {
+    const cleanupEvent = window.electronAPI.agentSession.onEvent((agentId: string, event: unknown) => {
+      const agentEvent = event as AgentEvent;
+      dispatch({ type: 'ADD_AGENT_EVENT', payload: { agentId, event: agentEvent } });
+
+      // Update agent status based on event type
+      if (agentEvent.kind === 'tool-start' || agentEvent.kind === 'assistant-delta' || agentEvent.kind === 'subagent-started') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'working' } });
+      } else if (agentEvent.kind === 'session-idle') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'idle' } });
+      } else if (agentEvent.kind === 'error') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'error' } });
+      }
+    });
+
+    return () => {
+      cleanupEvent();
+    };
+  }, [dispatch]);
+
+  // Listen for orchestrator-created agents (chat tool calls create_agent)
+  useEffect(() => {
+    const cleanup = window.electronAPI.agentSession.onAgentCreated((info) => {
+      // Register file access for the new agent
+      window.electronAPI.fs.addAllowedRoot(info.cwd);
+      // Add agent to state with hasSession flag
+      dispatch({
+        type: 'ADD_AGENT',
+        payload: {
+          id: info.agentId,
+          label: info.label,
+          cwd: info.cwd,
+          hasSession: true,
+        },
+      });
+    });
+    return cleanup;
+  }, [dispatch]);
+
   // Restore session on mount
   useEffect(() => {
     if (hasRestoredRef.current) return;
@@ -77,19 +117,31 @@ function AppContent() {
         if (sessionData && sessionData.agents.length > 0) {
           // Restore each agent
           for (const agent of sessionData.agents) {
-            // Create the PTY process and get worktree status
-            const result = await window.electronAPI.agent.create(agent.id, agent.cwd);
-            
-            // Dispatch to add agent to state
-            dispatch({
-              type: 'ADD_AGENT',
-              payload: { 
-                id: agent.id, 
-                label: agent.label, 
-                cwd: agent.cwd,
-                isWorktree: result.isWorktree,
-              },
-            });
+            if (agent.hasSession) {
+              // SDK-driven agent — register file access but skip PTY
+              await window.electronAPI.fs.addAllowedRoot(agent.cwd);
+              dispatch({
+                type: 'ADD_AGENT',
+                payload: {
+                  id: agent.id,
+                  label: agent.label,
+                  cwd: agent.cwd,
+                  hasSession: true,
+                },
+              });
+            } else {
+              // Terminal agent — create PTY process
+              const result = await window.electronAPI.agent.create(agent.id, agent.cwd);
+              dispatch({
+                type: 'ADD_AGENT',
+                payload: { 
+                  id: agent.id, 
+                  label: agent.label, 
+                  cwd: agent.cwd,
+                  isWorktree: result.isWorktree,
+                },
+              });
+            }
 
             // Restore open files for this agent
             for (const file of agent.openFiles) {
@@ -140,7 +192,14 @@ function AppContent() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       window.electronAPI.session.save({
-        agents: state.agents,
+        agents: state.agents.map(a => ({
+          id: a.id,
+          label: a.label,
+          cwd: a.cwd,
+          openFiles: a.openFiles,
+          isWorktree: a.isWorktree,
+          hasSession: a.hasSession,
+        })),
         activeItemId: state.activeItemId,
         activeAgentId: state.activeAgentId,
         activeConversationId: state.activeConversationId,

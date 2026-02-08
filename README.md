@@ -45,6 +45,14 @@ A modern Electron-based agent manager for working across multiple repositories s
 - Manage conversations in the right pane — create, switch, rename, and delete
 - Each conversation gets its own isolated AI context
 
+### 🤖 Chat-Driven Agents
+- Create SDK-powered agents from chat: "Create an agent for ~/src/my-project"
+- Agents appear in the left pane with a copilot icon and live status dot
+- **Activity feed** — card-based UI showing tool calls, file reads, edits, and results
+- Agent work is scoped to a local repo folder via `workingDirectory`
+- Send follow-up tasks: "Now run the tests and fix anything that breaks"
+- Manage multiple agents simultaneously across different repositories
+
 ## Installation
 
 ### Prerequisites
@@ -76,6 +84,8 @@ npm start
 6. **Close Items**: Right-click on agents or files for context menu options
 7. **Chat with Copilot**: Click "Copilot Chat" in the left pane to start a conversation
 8. **Manage Conversations**: Use the right pane to create new conversations, switch between them, or right-click to rename/delete
+9. **Create Agent from Chat**: In Copilot Chat, say "Create an agent for ~/src/my-project" — it creates an SDK agent with a live activity feed
+10. **Send Tasks to Agents**: In chat, say "Review the code and summarize" — the agent works autonomously and reports back
 
 ### Keyboard Shortcuts
 - `Ctrl+Tab` - Next agent
@@ -109,11 +119,15 @@ src/
 ├── main/
 │   ├── services/
 │   │   ├── AgentService.ts     # PTY management
-│   │   ├── CopilotService.ts   # Copilot SDK integration
+│   │   ├── AgentSessionService.ts # SDK agent sessions & event mapping
+│   │   ├── CopilotService.ts   # Copilot SDK chat integration
 │   │   ├── ConversationService.ts # Chat conversation persistence
+│   │   ├── OrchestratorTools.ts # Chat-to-agent tools (vp_create_agent, etc.)
+│   │   ├── SdkLoader.ts        # Shared CopilotClient singleton
 │   │   └── FileService.ts      # File system operations
 │   └── ipc/
 │       ├── agent.ts        # Agent IPC handlers
+│       ├── agent-session.ts # SDK agent session IPC handlers
 │       ├── copilot.ts      # Copilot chat IPC handlers
 │       ├── conversation.ts # Conversation CRUD IPC handlers
 │       └── files.ts        # File IPC handlers

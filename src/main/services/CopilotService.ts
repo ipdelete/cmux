@@ -1,29 +1,43 @@
-// Dynamic import for ESM-only @github/copilot-sdk in CJS Electron main process
-type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
-type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
+// Uses shared SDK loader for ESM-only @github/copilot-sdk in CJS Electron main process
+import { app } from 'electron';
+import * as fs from 'fs';
+import * as path from 'path';
+import { getSharedClient, loadSdk } from './SdkLoader';
 
-async function loadSdk() {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval
-  return new Function('return import("@github/copilot-sdk")')() as Promise<typeof import('@github/copilot-sdk')>;
+type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
+type ToolType = import('@github/copilot-sdk').Tool;
+
+let logFilePath: string | null = null;
+
+function logToFile(message: string): void {
+  const filePath = logFilePath ?? (logFilePath = path.join(app.getPath('userData'), 'copilot-chat.log'));
+  fs.appendFile(filePath, `${new Date().toISOString()} ${message}\n`, (err) => {
+    if (err) {
+      console.error('[CopilotService] Failed to write log file:', err);
+    }
+  });
 }
 
 export class CopilotService {
-  private client: CopilotClientType | null = null;
   private sessions: Map<string, CopilotSessionType> = new Map();
   private sessionModels: Map<string, string> = new Map();
   private activeAbortControllers: Map<string, AbortController> = new Map();
+  private tools: ToolType[] = [];
+  private systemMessage: string | null = null;
 
-  async start(): Promise<void> {
-    const { CopilotClient } = await loadSdk();
-    this.client = new CopilotClient();
-    await this.client.start();
+  /** Register tools that will be provided to all new chat sessions. */
+  setTools(tools: ToolType[]): void {
+    this.tools = tools;
+  }
+
+  /** Set a system message appended to all new chat sessions. */
+  setSystemMessage(message: string): void {
+    this.systemMessage = message;
   }
 
   async listModels(): Promise<Array<{ id: string; name: string }>> {
-    if (!this.client) {
-      await this.start();
-    }
-    const models = await this.client!.listModels();
+    const client = await getSharedClient();
+    const models = await client.listModels();
     return models.map(m => ({ id: m.id, name: m.name }));
   }
 
@@ -36,11 +50,26 @@ export class CopilotService {
 
     let session = this.sessions.get(conversationId);
     if (!session) {
-      if (!this.client) {
-        await this.start();
+      const client = await getSharedClient();
+      const config: Record<string, unknown> = {};
+      if (model) config.model = model;
+      if (this.tools.length > 0) config.tools = this.tools;
+      if (this.systemMessage) {
+        config.systemMessage = { mode: 'append', content: this.systemMessage };
       }
-      const config = model ? { model } : undefined;
-      session = await this.client!.createSession(config);
+      // Auto-approve permissions so CLI tools (bash, read, edit) don't block
+      config.onPermissionRequest = async (request: { kind: string }) => {
+        console.log(`[CopilotService] Permission auto-approved: ${request.kind}`);
+        logToFile(`Permission auto-approved: ${request.kind}`);
+        return { kind: 'approved' };
+      };
+      // Handle user input requests so ask_user doesn't throw
+      config.onUserInputRequest = async (request: { question: string }) => {
+        console.log(`[CopilotService] User input requested: ${request.question}`);
+        logToFile(`User input requested: ${request.question}`);
+        return { answer: 'Not available in this context', wasFreeform: true };
+      };
+      session = await client.createSession(config as Parameters<typeof client.createSession>[0]);
       this.sessions.set(conversationId, session);
       if (model) {
         this.sessionModels.set(conversationId, model);
@@ -75,6 +104,14 @@ export class CopilotService {
 
       let receivedChunks = false;
 
+      // Log all events for debugging
+      const unsubDebug = session.on((event) => {
+        if (event.type === 'assistant.message_delta') return; // too noisy
+        const payload = JSON.stringify(event.data ?? {}).slice(0, 200);
+        console.log(`[CopilotService] Event: ${event.type}`, payload);
+        logToFile(`Event: ${event.type} ${payload}`);
+      });
+
       // Stream deltas as they arrive
       const unsubDelta = session.on('assistant.message_delta', (event) => {
         if (abortController.signal.aborted) return;
@@ -83,9 +120,15 @@ export class CopilotService {
       });
 
       // sendAndWait blocks until the full response is ready
-      const response = await session.sendAndWait({ prompt });
+      // 5 min timeout — orchestrator tool calls (vp_send_to_agent) can take minutes
+      console.log(`[CopilotService] Sending prompt to session ${conversationId}`);
+      logToFile(`Sending prompt to session ${conversationId}`);
+      const response = await session.sendAndWait({ prompt }, 300_000);
+      console.log(`[CopilotService] sendAndWait resolved for ${conversationId}`);
+      logToFile(`sendAndWait resolved for ${conversationId}`);
 
       unsubDelta();
+      unsubDebug();
 
       if (abortController.signal.aborted) return;
 
@@ -98,6 +141,7 @@ export class CopilotService {
     } catch (err) {
       if (abortController.signal.aborted) return;
       const message = err instanceof Error ? err.message : String(err);
+      logToFile(`Error: ${message}`);
       onError(messageId, message);
     } finally {
       this.activeAbortControllers.delete(conversationId);
@@ -127,9 +171,5 @@ export class CopilotService {
       this.sessions.delete(id);
     }
     this.sessionModels.clear();
-    if (this.client) {
-      await this.client.stop().catch(() => {});
-      this.client = null;
-    }
   }
 }

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useAppState, getActiveItem } from '../../contexts/AppStateContext';
 import { AgentView } from './AgentView';
+import { AgentActivityView } from './AgentActivityView';
 import { FileView } from './FileView';
 import { ChatView } from './ChatView';
 import { Icon } from '../Icon';
@@ -29,9 +30,9 @@ export function CenterPane() {
       {/* Agents - always rendered to preserve state */}
       <div 
         className="pane-content agent-pane"
-        style={{ display: !isShowingChat && isShowingAgent ? 'block' : 'none' }}
+        style={{ display: !isShowingChat && isShowingAgent && !(activeItem?.type === 'agent' && activeItem.item.hasSession) ? 'block' : 'none' }}
       >
-        {agents.map(agent => (
+        {agents.filter(a => !a.hasSession).map(agent => (
           <AgentView
             key={agent.id}
             agentId={agent.id}
@@ -40,6 +41,13 @@ export function CenterPane() {
           />
         ))}
       </div>
+
+      {/* SDK agent activity feed */}
+      {!isShowingChat && isShowingAgent && activeItem?.type === 'agent' && activeItem.item.hasSession && (
+        <div className="pane-content agent-activity-pane">
+          <AgentActivityView agentId={activeItem.item.id} />
+        </div>
+      )}
 
       {/* File view - only render when a file is selected */}
       {!isShowingChat && isShowingFile && activeItem && (

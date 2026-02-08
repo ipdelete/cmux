@@ -1,7 +1,28 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { CopilotService } from '../services/CopilotService';
+import { createOrchestratorTools, setOnAgentCreated, ORCHESTRATOR_SYSTEM_MESSAGE } from '../services/OrchestratorTools';
 
 const copilotService = new CopilotService();
+let toolsInitialized = false;
+
+async function ensureToolsInitialized(mainWindow: BrowserWindow): Promise<void> {
+  if (toolsInitialized) return;
+  toolsInitialized = true;
+
+  try {
+    const tools = await createOrchestratorTools();
+    copilotService.setTools(tools);
+    copilotService.setSystemMessage(ORCHESTRATOR_SYSTEM_MESSAGE);
+
+    // When orchestrator creates an agent, notify renderer to add it to UI
+    setOnAgentCreated((info) => {
+      mainWindow.webContents.send('orchestrator:agent-created', info);
+    });
+  } catch (err) {
+    console.error('Failed to initialize orchestrator tools:', err);
+    toolsInitialized = false;
+  }
+}
 
 export function setupCopilotIPC(mainWindow: BrowserWindow): void {
   ipcMain.handle('copilot:listModels', async () => {
@@ -9,6 +30,9 @@ export function setupCopilotIPC(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('copilot:send', async (_event, conversationId: string, message: string, messageId: string, model?: string) => {
+    // Lazy-init tools on first send
+    await ensureToolsInitialized(mainWindow);
+
     await copilotService.sendMessage(
       conversationId,
       message,

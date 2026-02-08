@@ -10,6 +10,7 @@ export interface SessionAgent {
   label: string;
   cwd: string;
   openFiles: SessionFile[];
+  hasSession?: boolean;
 }
 
 export interface SessionFile {

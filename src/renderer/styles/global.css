@@ -946,3 +946,231 @@ kbd {
   color: var(--accent);
   background-color: var(--accent-glow);
 }
+
+/* ===== Agent Activity Feed ===== */
+
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.activity-events {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: var(--space-2);
+}
+
+.activity-empty .codicon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.activity-empty-hint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.activity-card {
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color var(--transition-base);
+}
+
+.activity-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  min-height: 32px;
+}
+
+.activity-card-title {
+  flex: 1;
+  font-weight: var(--font-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-card-body {
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.activity-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background-color: var(--bg-deep);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  display: block;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.activity-pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-deep);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.activity-text {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Tool start — subtle left border */
+.activity-card-tool-start {
+  border-left: 3px solid var(--accent);
+}
+
+.activity-card-tool-start .activity-card-header .codicon {
+  color: var(--accent);
+}
+
+/* Tool complete — success/failure variants */
+.activity-card-tool-complete {
+  border-left: 3px solid var(--accent);
+}
+
+.activity-card-tool-complete .activity-card-header .codicon {
+  color: var(--accent);
+}
+
+.activity-card-tool-complete.success {
+  border-left: 3px solid var(--success);
+}
+
+.activity-card-tool-complete.success .codicon {
+  color: var(--success);
+}
+
+.activity-card-tool-complete.failure {
+  border-left: 3px solid var(--error);
+}
+
+.activity-card-tool-complete.failure .codicon {
+  color: var(--error);
+}
+
+/* Assistant message */
+.activity-card-assistant {
+  border-left: 3px solid var(--accent-muted);
+  background-color: rgba(88, 166, 255, 0.04);
+}
+
+.activity-card-assistant .activity-card-header .codicon {
+  color: var(--accent);
+}
+
+/* Error */
+.activity-card-error {
+  border-left: 3px solid var(--error);
+  background-color: rgba(248, 81, 73, 0.06);
+}
+
+.activity-card-error .activity-card-header .codicon {
+  color: var(--error);
+}
+
+/* Sub-agent */
+.activity-card-subagent {
+  border-left: 3px solid var(--warning);
+}
+
+.activity-card-subagent .activity-card-header .codicon {
+  color: var(--warning);
+}
+
+.activity-card-subagent.success {
+  border-left: 3px solid var(--success);
+}
+
+.activity-card-subagent.success .activity-card-header .codicon {
+  color: var(--success);
+}
+
+/* Idle / done */
+.activity-card-idle {
+  border-left: 3px solid var(--success);
+  background-color: rgba(63, 185, 80, 0.06);
+}
+
+.activity-card-idle .codicon {
+  color: var(--success);
+}
+
+/* Spinner animation for in-progress items */
+.activity-card-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: activity-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes activity-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status dot for left pane */
+.agent-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.agent-status-dot.idle {
+  background-color: var(--success);
+}
+
+.agent-status-dot.working {
+  background-color: var(--warning);
+  animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+.agent-status-dot.error {
+  background-color: var(--error);
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
