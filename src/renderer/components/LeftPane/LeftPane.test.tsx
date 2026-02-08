@@ -53,6 +53,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
     renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
     const chatItem = screen.getByText('Copilot Chat').closest('.chat-nav-item');
@@ -74,6 +75,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -96,6 +98,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -125,6 +128,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -147,6 +151,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -178,6 +183,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -203,6 +209,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={onCloseAgent} />, state);
@@ -228,6 +235,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -258,6 +266,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(
@@ -290,6 +299,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(
@@ -324,6 +334,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(
@@ -357,6 +368,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(
@@ -392,6 +404,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -415,6 +428,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -437,6 +451,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -462,6 +477,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -496,6 +512,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);
@@ -525,6 +542,7 @@ describe('LeftPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />, state);

@@ -56,6 +56,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<CenterPane />, state);
@@ -79,6 +80,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<CenterPane />, state);
@@ -110,6 +112,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<CenterPane />, state);
@@ -139,6 +142,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     const { container } = renderWithProvider(<CenterPane />, state);
@@ -161,6 +165,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     const { container } = renderWithProvider(<CenterPane />, state);
@@ -183,6 +188,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     const { container } = renderWithProvider(<CenterPane />, state);
@@ -206,6 +212,7 @@ describe('CenterPane', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
     };
 
     renderWithProvider(<CenterPane />, state);

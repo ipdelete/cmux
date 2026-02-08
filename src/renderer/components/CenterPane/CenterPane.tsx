@@ -31,7 +31,7 @@ export function CenterPane() {
         className="pane-content agent-pane"
         style={{ display: !isShowingChat && isShowingAgent ? 'block' : 'none' }}
       >
-        {agents.map(agent => (
+        {agents.filter(a => !a.hasSession).map(agent => (
           <AgentView
             key={agent.id}
             agentId={agent.id}
@@ -40,6 +40,16 @@ export function CenterPane() {
           />
         ))}
       </div>
+
+      {/* SDK agent activity feed placeholder */}
+      {!isShowingChat && isShowingAgent && activeItem?.type === 'agent' && activeItem.item.hasSession && (
+        <div className="pane-content agent-activity-pane">
+          <div className="center-empty">
+            <Icon name="copilot" size={48} />
+            <p>Agent session active — activity feed coming soon</p>
+          </div>
+        </div>
+      )}
 
       {/* File view - only render when a file is selected */}
       {!isShowingChat && isShowingFile && activeItem && (

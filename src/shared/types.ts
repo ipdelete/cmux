@@ -1,10 +1,119 @@
+export type AgentStatus = 'idle' | 'working' | 'error';
+
 export interface Agent {
   id: string;
   label: string;
   cwd: string;
   openFiles: OpenFile[];
   isWorktree?: boolean;
+  hasSession?: boolean;
+  status?: AgentStatus;
 }
+
+// --- Agent Session Event Types ---
+
+export interface AgentEventToolStart {
+  kind: 'tool-start';
+  toolCallId: string;
+  toolName: string;
+  arguments?: string;
+  timestamp: number;
+}
+
+export interface AgentEventToolComplete {
+  kind: 'tool-complete';
+  toolCallId: string;
+  toolName: string;
+  success: boolean;
+  result?: string;
+  error?: string;
+  timestamp: number;
+}
+
+export interface AgentEventToolProgress {
+  kind: 'tool-progress';
+  toolCallId: string;
+  progressMessage: string;
+  timestamp: number;
+}
+
+export interface AgentEventToolPartialResult {
+  kind: 'tool-partial-result';
+  toolCallId: string;
+  partialOutput: string;
+  timestamp: number;
+}
+
+export interface AgentEventAssistantMessage {
+  kind: 'assistant-message';
+  messageId: string;
+  content: string;
+  timestamp: number;
+}
+
+export interface AgentEventAssistantDelta {
+  kind: 'assistant-delta';
+  messageId: string;
+  deltaContent: string;
+  timestamp: number;
+}
+
+export interface AgentEventError {
+  kind: 'error';
+  errorType: string;
+  message: string;
+  timestamp: number;
+}
+
+export interface AgentEventPermissionRequest {
+  kind: 'permission-request';
+  toolCallId: string;
+  toolName: string;
+  arguments?: string;
+  timestamp: number;
+}
+
+export interface AgentEventSessionIdle {
+  kind: 'session-idle';
+  timestamp: number;
+}
+
+export interface AgentEventSubagentStarted {
+  kind: 'subagent-started';
+  toolCallId: string;
+  agentName: string;
+  agentDisplayName: string;
+  timestamp: number;
+}
+
+export interface AgentEventSubagentCompleted {
+  kind: 'subagent-completed';
+  toolCallId: string;
+  agentName: string;
+  timestamp: number;
+}
+
+export interface AgentEventSubagentFailed {
+  kind: 'subagent-failed';
+  toolCallId: string;
+  agentName: string;
+  error: string;
+  timestamp: number;
+}
+
+export type AgentEvent =
+  | AgentEventToolStart
+  | AgentEventToolComplete
+  | AgentEventToolProgress
+  | AgentEventToolPartialResult
+  | AgentEventAssistantMessage
+  | AgentEventAssistantDelta
+  | AgentEventError
+  | AgentEventPermissionRequest
+  | AgentEventSessionIdle
+  | AgentEventSubagentStarted
+  | AgentEventSubagentCompleted
+  | AgentEventSubagentFailed;
 
 export interface ChatMessage {
   id: string;
@@ -61,6 +170,7 @@ export interface AppState {
   chatLoading: boolean;
   availableModels: ModelInfo[];
   selectedModel: string | null;
+  agentEvents: Record<string, AgentEvent[]>;
 }
 
 export interface SessionData {
@@ -72,7 +182,7 @@ export interface SessionData {
 }
 
 export type AppAction =
-  | { type: 'ADD_AGENT'; payload: { id: string; label: string; cwd: string; isWorktree?: boolean } }
+  | { type: 'ADD_AGENT'; payload: { id: string; label: string; cwd: string; isWorktree?: boolean; hasSession?: boolean } }
   | { type: 'REMOVE_AGENT'; payload: { id: string } }
   | { type: 'SET_ACTIVE_AGENT'; payload: { id: string } }
   | { type: 'SET_ACTIVE_ITEM'; payload: { id: string; agentId?: string } }
@@ -90,7 +200,11 @@ export type AppAction =
   | { type: 'SET_ACTIVE_CONVERSATION'; payload: { id: string | null } }
   | { type: 'SET_CHAT_MESSAGES'; payload: { messages: ChatMessage[] } }
   | { type: 'SET_AVAILABLE_MODELS'; payload: { models: ModelInfo[] } }
-  | { type: 'SET_SELECTED_MODEL'; payload: { model: string | null } };
+  | { type: 'SET_SELECTED_MODEL'; payload: { model: string | null } }
+  | { type: 'ADD_AGENT_EVENT'; payload: { agentId: string; event: AgentEvent } }
+  | { type: 'SET_AGENT_STATUS'; payload: { agentId: string; status: AgentStatus } }
+  | { type: 'CLEAR_AGENT_EVENTS'; payload: { agentId: string } }
+  | { type: 'SET_AGENT_HAS_SESSION'; payload: { agentId: string; hasSession: boolean } };
 
 // Auto-update types
 export type UpdateStatus = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'ready' | 'error' | 'dev-mode';

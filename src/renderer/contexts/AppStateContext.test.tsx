@@ -320,6 +320,7 @@ describe('selectors', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       const result = getActiveAgent(state);
@@ -344,6 +345,7 @@ describe('selectors', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       const result = getActiveItem(state);
@@ -370,6 +372,7 @@ describe('selectors', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       const result = getActiveItem(state);
@@ -402,6 +405,7 @@ describe('selectors', () => {
       activeConversationId: null,
       availableModels: [],
       selectedModel: null,
+      agentEvents: {},
       };
 
       const result = getFilesForAgent(state, 'agent-1');

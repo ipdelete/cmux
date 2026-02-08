@@ -77,19 +77,31 @@ function AppContent() {
         if (sessionData && sessionData.agents.length > 0) {
           // Restore each agent
           for (const agent of sessionData.agents) {
-            // Create the PTY process and get worktree status
-            const result = await window.electronAPI.agent.create(agent.id, agent.cwd);
-            
-            // Dispatch to add agent to state
-            dispatch({
-              type: 'ADD_AGENT',
-              payload: { 
-                id: agent.id, 
-                label: agent.label, 
-                cwd: agent.cwd,
-                isWorktree: result.isWorktree,
-              },
-            });
+            if (agent.hasSession) {
+              // SDK-driven agent — register file access but skip PTY
+              await window.electronAPI.fs.addAllowedRoot(agent.cwd);
+              dispatch({
+                type: 'ADD_AGENT',
+                payload: {
+                  id: agent.id,
+                  label: agent.label,
+                  cwd: agent.cwd,
+                  hasSession: true,
+                },
+              });
+            } else {
+              // Terminal agent — create PTY process
+              const result = await window.electronAPI.agent.create(agent.id, agent.cwd);
+              dispatch({
+                type: 'ADD_AGENT',
+                payload: { 
+                  id: agent.id, 
+                  label: agent.label, 
+                  cwd: agent.cwd,
+                  isWorktree: result.isWorktree,
+                },
+              });
+            }
 
             // Restore open files for this agent
             for (const file of agent.openFiles) {
@@ -140,7 +152,14 @@ function AppContent() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       window.electronAPI.session.save({
-        agents: state.agents,
+        agents: state.agents.map(a => ({
+          id: a.id,
+          label: a.label,
+          cwd: a.cwd,
+          openFiles: a.openFiles,
+          isWorktree: a.isWorktree,
+          hasSession: a.hasSession,
+        })),
         activeItemId: state.activeItemId,
         activeAgentId: state.activeAgentId,
         activeConversationId: state.activeConversationId,
