@@ -11,32 +11,70 @@ import { pathToFileURL } from 'url';
 
 type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
 
+const isWindows = process.platform === 'win32';
+
 let sdkModule: typeof import('@github/copilot-sdk') | null = null;
 let clientInstance: CopilotClientType | null = null;
 let startPromise: Promise<CopilotClientType> | null = null;
 
-function getGlobalNodeModules(): string {
-  // Check common locations first before shelling out
-  const homeDir = os.homedir();
-  const candidates = [
-    path.join(homeDir, '.local', 'lib', 'node_modules'),
-    path.join(homeDir, '.npm-global', 'lib', 'node_modules'),
-    '/usr/local/lib/node_modules',
-    '/usr/lib/node_modules',
-  ];
-  for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, '@github', 'copilot-sdk', 'package.json'))) {
-      return dir;
+let cachedPrefix: string | null = null;
+
+function getNpmGlobalPrefix(): string {
+  if (cachedPrefix) return cachedPrefix;
+
+  // 1. Fast path: check env var (set when running under npm)
+  if (process.env.npm_config_prefix) {
+    const envPrefix = process.env.npm_config_prefix;
+    if (fs.existsSync(envPrefix)) {
+      cachedPrefix = envPrefix;
+      return cachedPrefix;
     }
   }
-  // Fallback: ask npm
-  const npmRoot = execSync('npm root -g', { encoding: 'utf-8' }).trim();
-  if (fs.existsSync(path.join(npmRoot, '@github', 'copilot-sdk', 'package.json'))) {
-    return npmRoot;
+
+  // 2. Shell out to npm (works on every OS)
+  try {
+    cachedPrefix = execSync('npm prefix -g', { encoding: 'utf-8' }).trim();
+    return cachedPrefix;
+  } catch {
+    throw new Error(
+      'Could not determine npm global prefix. Is npm installed?'
+    );
   }
-  throw new Error(
-    '@github/copilot-sdk is not installed globally. Run: npm install -g @github/copilot-sdk'
-  );
+}
+
+function getGlobalNodeModules(): string {
+  const prefix = getNpmGlobalPrefix();
+  // Windows: {prefix}/node_modules — Unix: {prefix}/lib/node_modules
+  const modulesDir = isWindows
+    ? path.join(prefix, 'node_modules')
+    : path.join(prefix, 'lib', 'node_modules');
+
+  if (!fs.existsSync(path.join(modulesDir, '@github', 'copilot-sdk', 'package.json'))) {
+    throw new Error(
+      '@github/copilot-sdk is not installed globally. Run: npm install -g @github/copilot-sdk'
+    );
+  }
+  return modulesDir;
+}
+
+function getCopilotCliPath(): string {
+  // The SDK spawns the CLI via child_process.spawn(). For .js files, it uses
+  // process.execPath which is the Electron binary in packaged apps — not Node.
+  // We need a non-.js path so the SDK spawns it directly. On Unix, the global
+  // `copilot` symlink works (shebang invokes node). On Windows, `copilot.cmd`
+  // is a wrapper that calls node explicitly.
+  const prefix = getNpmGlobalPrefix();
+
+  const cliPath = isWindows
+    ? path.join(prefix, 'copilot.cmd')
+    : path.join(prefix, 'bin', 'copilot');
+
+  if (!fs.existsSync(cliPath)) {
+    throw new Error(
+      '@github/copilot CLI not found. Run: npm install -g @github/copilot-sdk'
+    );
+  }
+  return cliPath;
 }
 
 export async function loadSdk(): Promise<typeof import('@github/copilot-sdk')> {
@@ -59,9 +97,11 @@ export async function getSharedClient(): Promise<CopilotClientType> {
 
   startPromise = (async () => {
     const { CopilotClient } = await loadSdk();
+    const cliPath = getCopilotCliPath();
     const logDir = path.join(os.homedir(), '.copilot', 'logs');
     fs.mkdirSync(logDir, { recursive: true });
     clientInstance = new CopilotClient({
+      cliPath,
       logLevel: 'all',
       cliArgs: ['--log-dir', logDir],
     });
