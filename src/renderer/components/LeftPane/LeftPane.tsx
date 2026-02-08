@@ -143,8 +143,8 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
                   onContextMenu={(e) => handleAgentContextMenu(e, agent.id)}
                 >
                   <span className="agent-icon-wrapper">
-                    <Icon name="terminal" size="sm" />
-                    {agent.isWorktree && (
+                    <Icon name={agent.hasSession ? 'copilot' : 'terminal'} size="sm" />
+                    {agent.isWorktree && !agent.hasSession && (
                       <span className="worktree-badge" title="Git worktree">
                         <Icon name="git-branch" size={10} />
                       </span>
@@ -162,6 +162,9 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
                     />
                   ) : (
                     <span className="agent-label">{agent.label}</span>
+                  )}
+                  {agent.hasSession && agent.status && (
+                    <span className={`agent-status-dot ${agent.status}`} title={agent.status} />
                   )}
                 </div>
                 {agent.openFiles.length > 0 && (

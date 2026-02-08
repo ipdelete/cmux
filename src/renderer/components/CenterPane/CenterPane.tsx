@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useAppState, getActiveItem } from '../../contexts/AppStateContext';
 import { AgentView } from './AgentView';
+import { AgentActivityView } from './AgentActivityView';
 import { FileView } from './FileView';
 import { ChatView } from './ChatView';
 import { Icon } from '../Icon';
@@ -41,13 +42,10 @@ export function CenterPane() {
         ))}
       </div>
 
-      {/* SDK agent activity feed placeholder */}
+      {/* SDK agent activity feed */}
       {!isShowingChat && isShowingAgent && activeItem?.type === 'agent' && activeItem.item.hasSession && (
         <div className="pane-content agent-activity-pane">
-          <div className="center-empty">
-            <Icon name="copilot" size={48} />
-            <p>Agent session active — activity feed coming soon</p>
-          </div>
+          <AgentActivityView agentId={activeItem.item.id} />
         </div>
       )}
 

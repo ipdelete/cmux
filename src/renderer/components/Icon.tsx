@@ -7,6 +7,7 @@ export type IconName =
   | 'close'
   | 'chevron-right'
   | 'chevron-down'
+  | 'chevron-up'
   | 'folder'
   | 'folder-opened'
   | 'file'
@@ -39,7 +40,11 @@ export type IconName =
   | 'image'
   | 'library'
   | 'send'
-  | 'stop-circle';
+  | 'stop-circle'
+  | 'play'
+  | 'check'
+  | 'error'
+  | 'person';
 
 interface IconProps {
   name: IconName;

@@ -8,7 +8,7 @@ import { HotkeyHelp } from './components/HotkeyHelp';
 import { UpdateToast } from './components/UpdateToast';
 import { AppStateProvider, useAppState, getActiveItem } from './contexts/AppStateContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { UpdateState } from '../shared/types';
+import { UpdateState, AgentEvent } from '../shared/types';
 
 function AppContent() {
   const { state, dispatch } = useAppState();
@@ -58,6 +58,27 @@ function AppContent() {
   const handleDismissUpdate = useCallback(() => {
     setIsUpdateDismissed(true);
   }, []);
+
+  // Listen for agent session events from main process
+  useEffect(() => {
+    const cleanupEvent = window.electronAPI.agentSession.onEvent((agentId: string, event: unknown) => {
+      const agentEvent = event as AgentEvent;
+      dispatch({ type: 'ADD_AGENT_EVENT', payload: { agentId, event: agentEvent } });
+
+      // Update agent status based on event type
+      if (agentEvent.kind === 'tool-start' || agentEvent.kind === 'assistant-delta' || agentEvent.kind === 'subagent-started') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'working' } });
+      } else if (agentEvent.kind === 'session-idle') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'idle' } });
+      } else if (agentEvent.kind === 'error') {
+        dispatch({ type: 'SET_AGENT_STATUS', payload: { agentId, status: 'error' } });
+      }
+    });
+
+    return () => {
+      cleanupEvent();
+    };
+  }, [dispatch]);
 
   // Restore session on mount
   useEffect(() => {
