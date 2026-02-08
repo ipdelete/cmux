@@ -69,6 +69,16 @@ beforeAll(() => {
       delete: jest.fn().mockResolvedValue(undefined),
       rename: jest.fn().mockResolvedValue(undefined),
     },
+    agentSession: {
+      create: jest.fn().mockResolvedValue(undefined),
+      send: jest.fn().mockResolvedValue(undefined),
+      stop: jest.fn().mockResolvedValue(undefined),
+      destroy: jest.fn().mockResolvedValue(undefined),
+      onEvent: jest.fn().mockReturnValue(() => {}),
+      onPermissionRequest: jest.fn().mockReturnValue(() => {}),
+      respondPermission: jest.fn().mockResolvedValue(undefined),
+      onAgentCreated: jest.fn().mockReturnValue(() => {}),
+    },
   };
 });
 

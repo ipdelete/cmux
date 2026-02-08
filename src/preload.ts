@@ -97,6 +97,7 @@ export interface ElectronAPI {
     onEvent: (callback: (agentId: string, event: unknown) => void) => () => void;
     onPermissionRequest: (callback: (agentId: string, request: { toolCallId?: string; kind: string }) => void) => () => void;
     respondPermission: (agentId: string, toolCallId: string, decision: string) => Promise<void>;
+    onAgentCreated: (callback: (info: { agentId: string; label: string; cwd: string }) => void) => () => void;
   };
 }
 
@@ -251,6 +252,15 @@ const electronAPI: ElectronAPI = {
     },
     respondPermission: (agentId, toolCallId, decision) =>
       ipcRenderer.invoke('agent-session:permission-respond', agentId, toolCallId, decision),
+    onAgentCreated: (callback) => {
+      const handler = (_event: Electron.IpcRendererEvent, info: { agentId: string; label: string; cwd: string }) => {
+        callback(info);
+      };
+      ipcRenderer.on('orchestrator:agent-created', handler);
+      return () => {
+        ipcRenderer.removeListener('orchestrator:agent-created', handler);
+      };
+    },
   },
 };
 

@@ -80,6 +80,25 @@ function AppContent() {
     };
   }, [dispatch]);
 
+  // Listen for orchestrator-created agents (chat tool calls create_agent)
+  useEffect(() => {
+    const cleanup = window.electronAPI.agentSession.onAgentCreated((info) => {
+      // Register file access for the new agent
+      window.electronAPI.fs.addAllowedRoot(info.cwd);
+      // Add agent to state with hasSession flag
+      dispatch({
+        type: 'ADD_AGENT',
+        payload: {
+          id: info.agentId,
+          label: info.label,
+          cwd: info.cwd,
+          hasSession: true,
+        },
+      });
+    });
+    return cleanup;
+  }, [dispatch]);
+
   // Restore session on mount
   useEffect(() => {
     if (hasRestoredRef.current) return;

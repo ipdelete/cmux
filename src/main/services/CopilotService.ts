@@ -1,12 +1,25 @@
 // Uses shared SDK loader for ESM-only @github/copilot-sdk in CJS Electron main process
-import { getSharedClient } from './SdkLoader';
+import { getSharedClient, loadSdk } from './SdkLoader';
 
 type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
+type ToolType = import('@github/copilot-sdk').Tool;
 
 export class CopilotService {
   private sessions: Map<string, CopilotSessionType> = new Map();
   private sessionModels: Map<string, string> = new Map();
   private activeAbortControllers: Map<string, AbortController> = new Map();
+  private tools: ToolType[] = [];
+  private systemMessage: string | null = null;
+
+  /** Register tools that will be provided to all new chat sessions. */
+  setTools(tools: ToolType[]): void {
+    this.tools = tools;
+  }
+
+  /** Set a system message appended to all new chat sessions. */
+  setSystemMessage(message: string): void {
+    this.systemMessage = message;
+  }
 
   async listModels(): Promise<Array<{ id: string; name: string }>> {
     const client = await getSharedClient();
@@ -24,8 +37,13 @@ export class CopilotService {
     let session = this.sessions.get(conversationId);
     if (!session) {
       const client = await getSharedClient();
-      const config = model ? { model } : undefined;
-      session = await client.createSession(config);
+      const config: Record<string, unknown> = {};
+      if (model) config.model = model;
+      if (this.tools.length > 0) config.tools = this.tools;
+      if (this.systemMessage) {
+        config.systemMessage = { mode: 'append', content: this.systemMessage };
+      }
+      session = await client.createSession(config as Parameters<typeof client.createSession>[0]);
       this.sessions.set(conversationId, session);
       if (model) {
         this.sessionModels.set(conversationId, model);
