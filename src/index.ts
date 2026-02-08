@@ -17,9 +17,11 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) {
-  app.quit();
+if (!process.env.VP_ALLOW_MULTI) {
+  const gotTheLock = app.requestSingleInstanceLock();
+  if (!gotTheLock) {
+    app.quit();
+  }
 }
 
 let mainWindow: BrowserWindow | null = null;
