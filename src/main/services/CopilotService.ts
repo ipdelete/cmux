@@ -120,9 +120,10 @@ export class CopilotService {
       });
 
       // sendAndWait blocks until the full response is ready
+      // 5 min timeout — orchestrator tool calls (vp_send_to_agent) can take minutes
       console.log(`[CopilotService] Sending prompt to session ${conversationId}`);
       logToFile(`Sending prompt to session ${conversationId}`);
-      const response = await session.sendAndWait({ prompt });
+      const response = await session.sendAndWait({ prompt }, 300_000);
       console.log(`[CopilotService] sendAndWait resolved for ${conversationId}`);
       logToFile(`sendAndWait resolved for ${conversationId}`);
 
