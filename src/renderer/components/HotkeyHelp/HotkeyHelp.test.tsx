@@ -71,7 +71,7 @@ describe('HotkeyHelp', () => {
     expect(table).toBeInTheDocument();
     
     const rows = table?.querySelectorAll('tr');
-    expect(rows?.length).toBe(7); // 7 shortcuts defined
+    expect(rows?.length).toBe(8); // 8 shortcuts defined
   });
 
   it('should call onClose when Escape key is pressed', () => {

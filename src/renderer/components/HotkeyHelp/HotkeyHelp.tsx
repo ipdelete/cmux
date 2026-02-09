@@ -13,6 +13,7 @@ const shortcuts = [
   { keys: 'Ctrl + W', description: 'Close current agent/file' },
   { keys: 'F2', description: 'Rename agent' },
   { keys: 'Ctrl + ?', description: 'Show this help' },
+  { keys: 'Ctrl + J', description: 'Toggle scratch pad' },
   { keys: 'Ctrl + Shift + I', description: 'Open DevTools' },
 ];
 

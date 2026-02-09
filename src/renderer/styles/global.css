@@ -1174,3 +1174,77 @@ kbd {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ===== Scratch Pad Flyout ===== */
+
+.scratch-pad {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 250px;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform var(--transition-slow);
+}
+
+.scratch-pad--open {
+  transform: translateY(0);
+}
+
+.scratch-pad__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-muted);
+  flex-shrink: 0;
+}
+
+.scratch-pad__title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.scratch-pad__close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.scratch-pad__close:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+.scratch-pad__textarea {
+  flex: 1;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  resize: none;
+  outline: none;
+}
+
+.scratch-pad__textarea::placeholder {
+  color: var(--text-muted);
+}

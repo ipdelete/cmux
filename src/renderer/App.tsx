@@ -5,6 +5,7 @@ import { LeftPane } from './components/LeftPane';
 import { CenterPane } from './components/CenterPane';
 import { RightPane } from './components/RightPane';
 import { HotkeyHelp } from './components/HotkeyHelp';
+import { ScratchPad } from './components/ScratchPad';
 import { UpdateToast } from './components/UpdateToast';
 import { AppStateProvider, useAppState, getActiveItem } from './contexts/AppStateContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -15,6 +16,7 @@ import { AgentEvent } from '../shared/types';
 function AppContent() {
   const { state, dispatch } = useAppState();
   const [showHotkeyHelp, setShowHotkeyHelp] = useState(false);
+  const [showScratchPad, setShowScratchPad] = useState(false);
   const [renamingAgentId, setRenamingAgentId] = useState<string | null>(null);
   const { updateState, isUpdateDismissed, handleDownload: handleDownloadUpdate, handleInstall: handleInstallUpdate, handleDismiss: handleDismissUpdate } = useAutoUpdater();
 
@@ -76,6 +78,7 @@ function AppContent() {
         activeItemId: state.activeItemId,
         activeAgentId: state.activeAgentId,
         activeConversationId: state.activeConversationId,
+        agentNotes: state.agentNotes,
       });
     };
 
@@ -139,6 +142,7 @@ function AppContent() {
     { key: 'w', ctrl: true, action: handleCloseCurrentItem },
     { key: 'F2', action: handleRenameAgent },
     { key: '?', ctrl: true, shift: true, action: () => setShowHotkeyHelp(true) },
+    { key: 'j', ctrl: true, action: () => setShowScratchPad(prev => !prev) },
   ], [cycleAgent, handleCloseCurrentItem, handleRenameAgent]);
 
   useKeyboardShortcuts(shortcuts);
@@ -202,6 +206,16 @@ function AppContent() {
         />
       </div>
       <HotkeyHelp isOpen={showHotkeyHelp} onClose={() => setShowHotkeyHelp(false)} />
+      <ScratchPad
+        isOpen={showScratchPad && state.viewMode === 'agents' && !!state.activeAgentId}
+        onClose={() => setShowScratchPad(false)}
+        content={state.activeAgentId ? (state.agentNotes[state.activeAgentId] ?? '') : ''}
+        onChange={(content) => {
+          if (state.activeAgentId) {
+            dispatch({ type: 'SET_AGENT_NOTES', payload: { agentId: state.activeAgentId, content } });
+          }
+        }}
+      />
       {!isUpdateDismissed && (
         <UpdateToast
           updateState={updateState}

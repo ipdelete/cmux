@@ -13,6 +13,7 @@ type AgentAction = Extract<AppAction,
   | { type: 'SET_AGENT_HAS_SESSION' }
   | { type: 'ADD_AGENT_EVENT' }
   | { type: 'CLEAR_AGENT_EVENTS' }
+  | { type: 'SET_AGENT_NOTES' }
 >;
 
 export function agentReducer(state: AppState, action: AgentAction): AppState {
@@ -43,6 +44,7 @@ export function agentReducer(state: AppState, action: AgentAction): AppState {
         : state.activeAgentId;
       const newActiveItemId = wasActive ? newActiveAgentId : state.activeItemId;
       const { [action.payload.id]: _, ...remainingEvents } = state.agentEvents;
+      const { [action.payload.id]: __, ...remainingNotes } = state.agentNotes;
 
       return {
         ...state,
@@ -50,6 +52,7 @@ export function agentReducer(state: AppState, action: AgentAction): AppState {
         activeItemId: newActiveItemId,
         activeAgentId: newActiveAgentId,
         agentEvents: remainingEvents,
+        agentNotes: remainingNotes,
       };
     }
 
@@ -139,6 +142,15 @@ export function agentReducer(state: AppState, action: AgentAction): AppState {
         agentEvents: {
           ...state.agentEvents,
           [action.payload.agentId]: [],
+        },
+      };
+
+    case 'SET_AGENT_NOTES':
+      return {
+        ...state,
+        agentNotes: {
+          ...state.agentNotes,
+          [action.payload.agentId]: action.payload.content,
         },
       };
 

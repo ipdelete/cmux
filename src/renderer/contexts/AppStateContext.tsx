@@ -16,6 +16,7 @@ export const initialState: AppState = {
   availableModels: [],
   selectedModel: null,
   agentEvents: {},
+  agentNotes: {},
 };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -32,6 +33,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_AGENT_HAS_SESSION':
     case 'ADD_AGENT_EVENT':
     case 'CLEAR_AGENT_EVENTS':
+    case 'SET_AGENT_NOTES':
       return agentReducer(state, action);
 
     case 'ADD_CHAT_MESSAGE':

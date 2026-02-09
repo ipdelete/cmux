@@ -171,6 +171,7 @@ export interface AppState {
   availableModels: ModelInfo[];
   selectedModel: string | null;
   agentEvents: Record<string, AgentEvent[]>;
+  agentNotes: Record<string, string>;
 }
 
 export interface SessionData {
@@ -179,6 +180,7 @@ export interface SessionData {
   activeItemId: string | null;
   activeAgentId: string | null;
   activeConversationId: string | null;
+  agentNotes?: Record<string, string>;
 }
 
 export type AppAction =
@@ -204,7 +206,8 @@ export type AppAction =
   | { type: 'ADD_AGENT_EVENT'; payload: { agentId: string; event: AgentEvent } }
   | { type: 'SET_AGENT_STATUS'; payload: { agentId: string; status: AgentStatus } }
   | { type: 'CLEAR_AGENT_EVENTS'; payload: { agentId: string } }
-  | { type: 'SET_AGENT_HAS_SESSION'; payload: { agentId: string; hasSession: boolean } };
+  | { type: 'SET_AGENT_HAS_SESSION'; payload: { agentId: string; hasSession: boolean } }
+  | { type: 'SET_AGENT_NOTES'; payload: { agentId: string; content: string } };
 
 // Auto-update types
 export type UpdateStatus = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'ready' | 'error' | 'dev-mode';

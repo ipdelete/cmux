@@ -61,6 +61,15 @@ export function useSessionRestore(dispatch: React.Dispatch<AppAction>): void {
               },
             });
           }
+
+          // Restore agent notes
+          if (sessionData.agentNotes) {
+            for (const [agentId, content] of Object.entries(sessionData.agentNotes)) {
+              if (content && sessionData.agents.some(a => a.id === agentId)) {
+                dispatch({ type: 'SET_AGENT_NOTES', payload: { agentId, content } });
+              }
+            }
+          }
         }
 
         // Restore active conversation and its messages
