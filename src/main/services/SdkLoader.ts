@@ -58,23 +58,30 @@ function getGlobalNodeModules(): string {
 }
 
 function getCopilotCliPath(): string {
-  // The SDK spawns the CLI via child_process.spawn(). For .js files, it uses
-  // process.execPath which is the Electron binary in packaged apps — not Node.
-  // We need a non-.js path so the SDK spawns it directly. On Unix, the global
-  // `copilot` symlink works (shebang invokes node). On Windows, `copilot.cmd`
-  // is a wrapper that calls node explicitly.
-  const prefix = getNpmGlobalPrefix();
+  // The SDK spawns the CLI via child_process.spawn(). When cliPath ends with .js,
+  // the SDK spawns `node <path>`. On Windows, .cmd files can't be spawned directly
+  // without shell:true, so we return the .js entry point instead.
+  const globalModules = getGlobalNodeModules();
 
-  const cliPath = isWindows
-    ? path.join(prefix, 'copilot.cmd')
-    : path.join(prefix, 'bin', 'copilot');
-
-  if (!fs.existsSync(cliPath)) {
-    throw new Error(
-      '@github/copilot CLI not found. Run: npm install -g @github/copilot-sdk'
-    );
+  // Path to the CLI's JS entry point (works cross-platform via SDK's node detection)
+  const jsEntry = path.join(globalModules, '@github', 'copilot-sdk', 'node_modules', '@github', 'copilot', 'npm-loader.js');
+  if (fs.existsSync(jsEntry)) {
+    return jsEntry;
   }
-  return cliPath;
+
+  // Fallback: check if CLI is hoisted to global bin (older npm behavior)
+  const prefix = getNpmGlobalPrefix();
+  const hoistedJs = isWindows
+    ? null  // Windows global doesn't use symlinks to .js
+    : path.join(prefix, 'lib', 'node_modules', '@github', 'copilot', 'npm-loader.js');
+
+  if (hoistedJs && fs.existsSync(hoistedJs)) {
+    return hoistedJs;
+  }
+
+  throw new Error(
+    '@github/copilot CLI not found. Run: npm install -g @github/copilot-sdk'
+  );
 }
 
 export async function loadSdk(): Promise<typeof import('@github/copilot-sdk')> {
