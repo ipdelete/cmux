@@ -20,7 +20,7 @@ The interface is a three-pane layout: agents/conversations on the left, active v
 
 ## How It Works
 
-Built on `@github/copilot-sdk`. Each agent session gets a `workingDirectory` that scopes its access. The orchestrator exposes tools (`vp_create_agent`, etc.) that let the chat interface spawn and manage agents. Full PTY support means TUI apps like vim work correctly.
+Built on `@github/copilot-sdk`. Each agent session gets a `workingDirectory` that scopes its access. The orchestrator exposes tools (`vp_create_agent`, etc.) that let the chat interface spawn and manage agents. Full PTY support means TUI apps like GitHub Copilot CLI work correctly.
 
 ## Current State
 
@@ -37,14 +37,9 @@ Built on `@github/copilot-sdk`. Each agent session gets a `workingDirectory` tha
 
 ## Try It
 
-```bash
-git clone https://github.com/ipdelete/cmux.git
-cd cmux
-npm install
-npm start
-```
+Download the latest release: https://github.com/ipdelete/cmux/releases
 
-Requires Node 18+, npm 9+, and `gh` CLI authenticated.
+Requires `gh` CLI authenticated (`gh auth login`).
 
 ## Contact
 
