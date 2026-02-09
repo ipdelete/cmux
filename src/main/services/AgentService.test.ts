@@ -1,4 +1,5 @@
 import * as child_process from 'child_process';
+import * as os from 'os';
 
 // Mock node-pty
 const mockPtyProcess = {
@@ -80,7 +81,9 @@ describe('AgentService', () => {
       // Advance timers past the delay
       jest.advanceTimersByTime(200);
 
-      expect(agent?.pty.write).toHaveBeenCalledWith('copilot\n');
+      // Windows uses \r, Unix uses \n
+      const expectedEnding = os.platform() === 'win32' ? '\r' : '\n';
+      expect(agent?.pty.write).toHaveBeenCalledWith('copilot' + expectedEnding);
 
       jest.useRealTimers();
     });

@@ -62,7 +62,9 @@ class AgentService {
     if (initialCommand) {
       setTimeout(() => {
         if (this.agents.has(id)) {
-          ptyProcess.write(initialCommand + '\n');
+          // Use \r for Windows PowerShell compatibility (triggers command execution)
+          const lineEnding = os.platform() === 'win32' ? '\r' : '\n';
+          ptyProcess.write(initialCommand + lineEnding);
         }
       }, 200);
     }

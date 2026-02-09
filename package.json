@@ -1,7 +1,7 @@
 {
   "name": "cmux",
   "productName": "cmux",
-  "version": "0.13.4",
+  "version": "0.13.5",
   "description": "Terminal manager with integrated file browsing for multiple repositories",
   "main": ".webpack/main",
   "private": true,
