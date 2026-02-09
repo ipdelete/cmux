@@ -7,7 +7,7 @@ export type { FileEntry, FileWatchEvent, GitFileStatus, GitStatusMap, SessionDat
 export interface ElectronAPI {
   openDirectory: () => Promise<string | null>;
   agent: {
-    create: (id: string, cwd: string) => Promise<{ id: string; isWorktree: boolean }>;
+    create: (id: string, cwd: string, initialCommand?: string) => Promise<{ id: string; isWorktree: boolean }>;
     write: (id: string, data: string) => Promise<void>;
     resize: (id: string, cols: number, rows: number) => Promise<void>;
     kill: (id: string) => Promise<void>;
@@ -72,7 +72,7 @@ export interface ElectronAPI {
 const electronAPI: ElectronAPI = {
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   agent: {
-    create: (id, cwd) => ipcRenderer.invoke('agent:create', id, cwd),
+    create: (id, cwd, initialCommand) => ipcRenderer.invoke('agent:create', id, cwd, initialCommand),
     write: (id, data) => ipcRenderer.invoke('agent:write', id, data),
     resize: (id, cols, rows) => ipcRenderer.invoke('agent:resize', id, cols, rows),
     kill: (id) => ipcRenderer.invoke('agent:kill', id),

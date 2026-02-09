@@ -7,8 +7,8 @@ export function setupAgentIPC(mainWindow: BrowserWindow): void {
   const agentsWithHandlers = new Set<string>();
 
   // Create a new agent
-  ipcMain.handle('agent:create', (_event, id: string, cwd: string) => {
-    agentService.create(id, cwd);
+  ipcMain.handle('agent:create', (_event, id: string, cwd: string, initialCommand?: string) => {
+    agentService.create(id, cwd, initialCommand);
     
     // Detect if this is a git worktree
     const isWorktree = agentService.isGitWorktree(cwd);

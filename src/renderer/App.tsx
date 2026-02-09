@@ -95,7 +95,7 @@ function AppContent() {
       // Register allowed root BEFORE adding agent so FileTree can access it
       await window.electronAPI.fs.addAllowedRoot(directory);
       // Create agent and get worktree status
-      const result = await window.electronAPI.agent.create(id, directory);
+      const result = await window.electronAPI.agent.create(id, directory, 'copilot');
       dispatch({
         type: 'ADD_AGENT',
         payload: { id, label, cwd: directory, isWorktree: result.isWorktree },

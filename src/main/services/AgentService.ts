@@ -35,7 +35,7 @@ class AgentService {
     }
   }
 
-  create(id: string, cwd: string): string {
+  create(id: string, cwd: string, initialCommand?: string): string {
     // Return existing agent if already created (prevents duplicate PTY on session restore)
     if (this.agents.has(id)) {
       return id;
@@ -58,6 +58,15 @@ class AgentService {
     };
 
     this.agents.set(id, instance);
+
+    if (initialCommand) {
+      setTimeout(() => {
+        if (this.agents.has(id)) {
+          ptyProcess.write(initialCommand + '\n');
+        }
+      }, 200);
+    }
+
     return id;
   }
 

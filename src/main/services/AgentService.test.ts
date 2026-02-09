@@ -67,6 +67,36 @@ describe('AgentService', () => {
       // spawn should not have been called again
       expect(mockSpawn).toHaveBeenCalledTimes(firstCallCount);
     });
+
+    it('should write initialCommand to PTY after delay when provided', () => {
+      jest.useFakeTimers();
+
+      agentService.create('test-cmd', '/home/user', 'copilot');
+      const agent = agentService.getAgent('test-cmd');
+
+      // Command should not be written immediately
+      expect(agent?.pty.write).not.toHaveBeenCalled();
+
+      // Advance timers past the delay
+      jest.advanceTimersByTime(200);
+
+      expect(agent?.pty.write).toHaveBeenCalledWith('copilot\n');
+
+      jest.useRealTimers();
+    });
+
+    it('should not write to PTY when initialCommand is omitted', () => {
+      jest.useFakeTimers();
+
+      agentService.create('test-no-cmd', '/home/user');
+      const agent = agentService.getAgent('test-no-cmd');
+
+      jest.advanceTimersByTime(500);
+
+      expect(agent?.pty.write).not.toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
   });
 
   describe('write', () => {
