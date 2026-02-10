@@ -81,7 +81,7 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
   return (
     <>
       <div className="pane-header">
-        <span>Agents</span>
+        <span>Agent Workspace</span>
         <button className="add-btn" onClick={onAddAgent} title="New Agent">
           <Icon name="add" size="sm" />
         </button>

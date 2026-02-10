@@ -41,6 +41,9 @@ jest.mock('../components/RightPane/FileTree', () => ({
 
 beforeAll(() => {
   (window as any).electronAPI = {
+    config: {
+      autoCopilot: false,
+    },
     agent: {
       create: mockCreateAgent,
       kill: mockKillAgent,

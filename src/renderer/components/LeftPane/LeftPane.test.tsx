@@ -15,7 +15,7 @@ const renderWithProvider = (ui: React.ReactElement, initialState?: AppState) => 
 describe('LeftPane', () => {
   it('should render header with title', () => {
     renderWithProvider(<LeftPane onAddAgent={() => {}} onCloseAgent={() => {}} />);
-    expect(screen.getByText('Agents')).toBeInTheDocument();
+    expect(screen.getByText('Agent Workspace')).toBeInTheDocument();
   });
 
   it('should render add button', () => {

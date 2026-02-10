@@ -2,7 +2,7 @@
 
 ## Overview
 
-The chat orchestrator unifies cmux's two core features — terminal agents and Copilot chat — into a single workflow where **chat is the control plane** and **agents are the workers**. You tell chat what you want done, it creates agents scoped to local repos, and you watch the work happen in a live activity feed.
+The chat orchestrator unifies cmux's two core features — workspaces and Copilot chat — into a single workflow where **chat is the control plane** and **agents are the workers**. You tell chat what you want done, it creates agents scoped to local repos, and you watch the work happen in a live activity feed.
 
 ## User Flow
 
@@ -13,7 +13,7 @@ Open Copilot Chat from the left pane and describe what you want:
 
 ### 2. Agent Appears
 Chat calls `vp_create_agent` behind the scenes. A new agent named "pallet" appears in the left pane with:
-- A **copilot icon** (distinguishing it from manual terminal agents)
+- A **copilot icon** (distinguishing it from workspaces)
 - A **status dot** — green (idle), yellow pulsing (working), red (error)
 
 ### 3. Watch the Activity Feed
@@ -66,18 +66,18 @@ Chat calls `vp_list_agents` and reports all agents with their current state.
 │       │── Event mapping (SDK → AgentEvent)             │
 │       │── Permission request forwarding                │
 │       │                                                │
-│  AgentService (existing PTY terminals)                 │
-│       │── Still available for manual terminal agents   │
+│  AgentService (existing PTY terminals / workspaces)   │
+│       │── Still available for workspace terminals      │
 └───────┼────────────────────────────────────────────────┘
         │ IPC events
         ▼
 ┌──────────────────────────────────────────────────────┐
 │                   RENDERER                             │
 │                                                        │
-│  LeftPane: agents with copilot icon + status dots      │
+│  LeftPane: workspaces + agents with copilot icon + status dots │
 │  CenterPane:                                           │
 │    AgentActivityView ← card-based event feed           │
-│    AgentView ← raw terminal (for non-SDK agents)       │
+│    AgentView ← raw terminal (for workspaces)           │
 │    ChatView ← orchestrator chat                        │
 │  RightPane: file tree (unchanged)                      │
 │                                                        │
@@ -122,7 +122,7 @@ The SDK emits rich events that are mapped to `AgentEvent` types:
 | `subagent.failed` | `subagent-failed` | Sub-agent error card |
 
 ### State Management
-- `Agent.hasSession` — distinguishes SDK agents from PTY terminal agents
+- `Agent.hasSession` — distinguishes agents (chat-created) from workspaces (PTY terminals)
 - `Agent.status` — `idle` / `working` / `error`, updated automatically from events
 - `AppState.agentEvents` — `Record<string, AgentEvent[]>`, kept in memory only (not persisted to `session.json` to avoid bloat)
 - `Agent.hasSession` IS persisted — so session restore knows to skip PTY creation
@@ -130,8 +130,8 @@ The SDK emits rich events that are mapped to `AgentEvent` types:
 ### CenterPane Routing
 ```
 viewMode === 'chat'                    → ChatView
-viewMode === 'agents' + hasSession     → AgentActivityView
-viewMode === 'agents' + !hasSession    → AgentView (terminal)
+viewMode === 'agents' + hasSession     → AgentActivityView (agent)
+viewMode === 'agents' + !hasSession    → AgentView (workspace terminal)
 activeItem is file                     → FileView
 ```
 

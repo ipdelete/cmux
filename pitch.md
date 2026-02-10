@@ -1,26 +1,26 @@
 # cmux
 
-**A desktop app for managing multiple AI coding agents across repositories.**
+**A desktop app for managing AI coding agents and workspaces across repositories.**
 
 ## The Problem
 
-Developers working with GitHub Copilot CLI often juggle multiple repositories simultaneously. Each needs its own terminal session, its own context, its own agent. Switching between them means losing focus. There's no unified way to orchestrate AI agents across a multi-repo workflow.
+Developers working with GitHub Copilot CLI often juggle multiple repositories simultaneously. Each needs its own terminal session, its own context, its own workspace. Switching between them means losing focus. There's no unified way to orchestrate AI agents across a multi-repo workflow.
 
 ## The Solution
 
 cmux is an Electron app that lets you:
 
-- **Run multiple Copilot agents** — each scoped to a different repo, all visible in one window
-- **Create agents from chat** — say "Create an agent for ~/src/my-project" and it spins up an SDK-powered agent
+- **Open multiple workspaces** — each scoped to a different repo, all visible in one window
+- **Create agents from chat** — say "Create an agent for ~/src/my-project" and it spins up an agent
 - **See what agents are doing** — live activity feeds show tool calls, file reads, edits, and results
 - **Browse and view files** — Monaco editor integration with full syntax highlighting
 - **Keep conversations** — chat history persists across restarts
 
-The interface is a three-pane layout: agents/conversations on the left, active view in the center, file tree on the right.
+The interface is a three-pane layout: workspaces/conversations on the left, active view in the center, file tree on the right.
 
 ## How It Works
 
-Built on `@github/copilot-sdk`. Each agent session gets a `workingDirectory` that scopes its access. The orchestrator exposes tools (`vp_create_agent`, etc.) that let the chat interface spawn and manage agents. Full PTY support means TUI apps like GitHub Copilot CLI work correctly.
+Built on `@github/copilot-sdk`. Each agent session gets a `workingDirectory` that scopes its access. The orchestrator exposes tools (`vp_create_agent`, etc.) that let the chat interface spawn and manage agents. Full PTY support in workspaces means TUI apps like GitHub Copilot CLI work correctly.
 
 ## Current State
 

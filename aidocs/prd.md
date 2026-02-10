@@ -1,19 +1,20 @@
-# Product Requirements Document: Multi-Repo Terminal Manager
+# Product Requirements Document: Multi-Repo Workspace Manager
 
 ## Overview
 
-An Electron-based application that provides a unified interface for managing multiple terminal sessions across different repositories, with integrated file browsing and editing capabilities.
+An Electron-based application that provides a unified interface for managing multiple workspaces across different repositories, with integrated Copilot agents, file browsing, and editing capabilities.
 
 ## Problem Statement
 
-Developers frequently work across multiple repositories simultaneously, requiring them to juggle multiple terminal windows and file explorers. Context switching between repos is cumbersome, and there's no unified view of what's open where.
+Developers frequently work across multiple repositories simultaneously, requiring them to juggle multiple terminal windows and file explorers. Context switching between repos is cumbersome, and there's no unified way to orchestrate AI agents across a multi-repo workflow.
 
 ## Solution
 
-A three-pane desktop application that organizes work by terminal context, allowing users to:
-- Manage multiple terminal sessions in one window
-- Browse files relative to each terminal's working directory
-- Open and view files associated with each terminal context
+A three-pane desktop application that organizes work by workspace context, allowing users to:
+- Manage multiple workspace terminals in one window
+- Create AI agents from chat to work autonomously in repositories
+- Browse files relative to each workspace's working directory
+- Open and view files associated with each workspace context
 - Quickly switch between repo contexts with a single click
 
 ---
@@ -44,42 +45,46 @@ A three-pane desktop application that organizes work by terminal context, allowi
 
 ### Left Pane (Navigation Panel)
 
-**Purpose:** Display all open terminals and their associated files in a hierarchical list.
+**Purpose:** Display all open workspaces, agents, and their associated files in a hierarchical list.
 
 **Features:**
-- **"+" button** in the pane header to create a new terminal
-- List of all open terminal sessions
-- Each terminal displays its working directory name or custom label
-- Files opened from a terminal appear as children under that terminal
+- **"+" button** in the pane header to create a new workspace
+- List of all open workspace sessions and chat-created agents
+- Each workspace displays its working directory name or custom label
+- Files opened from a workspace appear as children under that workspace
 - Visual indicator (highlight/arrow) showing the currently active item
 - Right-click context menu (context-sensitive):
   
-  **On a terminal item:**
-  - Rename terminal
-  - Close terminal
-  - Open new terminal in same directory
+  **On a workspace item:**
+  - Rename workspace
+  - Close workspace
+  - Open new workspace in same directory
   
-  **On a file item (nested under terminal):**
+  **On a file item (nested under workspace):**
   - Close file
   - Copy file path
   - Reveal in file tree (scrolls/highlights in right pane)
 
 **Behavior:**
-- Clicking a terminal switches the center pane to that terminal and updates the right pane
+- Clicking a workspace switches the center pane to that workspace and updates the right pane
 - Clicking a file switches the center pane to that file's content
-- Drag-and-drop to reorder terminals (stretch goal)
+- Drag-and-drop to reorder workspaces (stretch goal)
 
 ### Center Pane (Content View)
 
-**Purpose:** Display the active terminal or file content.
+**Purpose:** Display the active workspace terminal, agent activity feed, or file content.
 
 **Features:**
-- **Terminal Mode:**
+- **Workspace Mode:**
   - Fully interactive terminal emulator (xterm.js or similar)
   - Support for standard shell features (bash, zsh, PowerShell, cmd)
   - Copy/paste support
   - Scrollback buffer
   - Search within terminal output
+
+- **Agent Mode:**
+  - Card-based activity feed showing tool calls and agent reasoning
+  - Live status updates as the agent works
 
 - **File Mode:**
   - Syntax-highlighted code viewer
@@ -89,12 +94,12 @@ A three-pane desktop application that organizes work by terminal context, allowi
   - Future: Edit capability with save
 
 **Behavior:**
-- Seamlessly switches between terminal and file views based on left pane selection
-- Maintains terminal state when switching away and back
+- Seamlessly switches between workspace, agent, and file views based on left pane selection
+- Maintains workspace state when switching away and back
 
 ### Right Pane (File Tree)
 
-**Purpose:** Display the directory structure of the current terminal's working directory.
+**Purpose:** Display the directory structure of the current workspace's working directory.
 
 **Features:**
 - Hierarchical tree view of files and folders
@@ -104,13 +109,13 @@ A three-pane desktop application that organizes work by terminal context, allowi
 - Search/filter files
 
 **Behavior:**
-- Updates automatically when a different terminal is selected in the left pane
+- Updates automatically when a different workspace is selected in the left pane
 - Single-click to preview file (optional)
 - Double-click (or single-click, configurable) to open file in center pane
-- Opening a file adds it to the left pane under the current terminal
+- Opening a file adds it to the left pane under the current workspace
 - Right-click context menu for:
   - Open file
-  - Open terminal here (creates new terminal at this folder)
+  - Open workspace here (creates new workspace at this folder)
   - Copy path
   - Reveal in system file explorer
   - Future: Create/rename/delete files
@@ -121,10 +126,10 @@ A three-pane desktop application that organizes work by terminal context, allowi
 
 | Action | Windows/Linux | macOS |
 |--------|---------------|-------|
-| New terminal | Ctrl+Shift+T | Cmd+Shift+T |
-| Close terminal/file | Ctrl+W | Cmd+W |
-| Next terminal | Ctrl+Tab | Cmd+Tab |
-| Previous terminal | Ctrl+Shift+Tab | Cmd+Shift+Tab |
+| New workspace | Ctrl+Shift+T | Cmd+Shift+T |
+| Close workspace/file | Ctrl+W | Cmd+W |
+| Next workspace | Ctrl+Tab | Cmd+Tab |
+| Previous workspace | Ctrl+Shift+Tab | Cmd+Shift+Tab |
 | Toggle file tree | Ctrl+B | Cmd+B |
 | Focus left pane | Ctrl+1 | Cmd+1 |
 | Focus center pane | Ctrl+2 | Cmd+2 |
@@ -137,9 +142,9 @@ A three-pane desktop application that organizes work by terminal context, allowi
 ## Menu Bar
 
 ### File Menu
-- New Terminal (opens directory picker)
-- New Terminal in... → Recent directories
-- Close Terminal
+- New Workspace (opens directory picker)
+- New Workspace in... → Recent directories
+- Close Workspace
 - Close File
 - Exit
 
@@ -148,40 +153,40 @@ A three-pane desktop application that organizes work by terminal context, allowi
 - Toggle Right Pane
 - Zoom In / Out / Reset
 
-### Terminal Menu
+### Workspace Menu
 - Clear Terminal
 - Kill Process
-- Rename Terminal
+- Rename Workspace
 
 ---
 
 ## Core Features (MVP)
 
-### F1: Terminal Management
-- Create new terminal sessions
-- Each terminal opens in a user-specified directory
-- Close terminal sessions
-- Terminal sessions persist their state while app is running
+### F1: Workspace Management
+- Create new workspace sessions
+- Each workspace opens in a user-specified directory
+- Close workspace sessions
+- Workspace sessions persist their state while app is running
 
-### F2: Multi-Terminal Navigation
-- Switch between terminals via left pane
-- Visual indication of active terminal
+### F2: Multi-Workspace Navigation
+- Switch between workspaces via left pane
+- Visual indication of active workspace
 - Terminal output preserved when switching
 
 ### F3: File Tree Browsing
-- Display directory tree for current terminal's working directory
+- Display directory tree for current workspace's working directory
 - Expand/collapse folders
 - Refresh tree
 
 ### F4: File Viewing
 - Open files from the file tree
 - Syntax highlighting for common languages
-- Files appear nested under their parent terminal in left pane
+- Files appear nested under their parent workspace in left pane
 
 ### F5: Context Switching
-- Clicking a terminal updates both center and right panes
+- Clicking a workspace updates both center and right panes
 - Clicking a file updates center pane to show file content
-- Right pane always reflects the directory of the selected terminal (not the file)
+- Right pane always reflects the directory of the selected workspace (not the file)
 
 ---
 
@@ -218,20 +223,20 @@ A three-pane desktop application that organizes work by terminal context, allowi
 
 ## User Stories
 
-### US1: Open Multiple Terminals
-> As a developer, I want to open multiple terminals in different repo directories so that I can run different services simultaneously.
+### US1: Open Multiple Workspaces
+> As a developer, I want to open multiple workspaces in different repo directories so that I can run different services simultaneously.
 
 ### US2: Switch Repo Context
-> As a developer, I want to click a terminal in the left pane and have the file tree update to that repo so that I can quickly browse files in the correct context.
+> As a developer, I want to click a workspace in the left pane and have the file tree update to that repo so that I can quickly browse files in the correct context.
 
 ### US3: Open Files from Tree
 > As a developer, I want to click a file in the tree view and see its contents in the center pane so that I can quickly reference code without leaving the app.
 
 ### US4: Track Open Files
-> As a developer, I want to see which files I have open under each terminal so that I can quickly navigate back to files I was looking at.
+> As a developer, I want to see which files I have open under each workspace so that I can quickly navigate back to files I was looking at.
 
 ### US5: Close Items
-> As a developer, I want to close terminals and files I no longer need so that my workspace stays organized.
+> As a developer, I want to close workspaces and files I no longer need so that my workspace stays organized.
 
 ---
 
@@ -245,8 +250,8 @@ A three-pane desktop application that organizes work by terminal context, allowi
 - [ ] Keyboard shortcuts for all actions
 
 ### Phase 3
-- [ ] Session persistence (restore terminals on app restart)
-- [ ] Workspaces (save/load sets of terminals)
+- [ ] Session persistence (restore workspaces on app restart)
+- [ ] Workspace presets (save/load sets of workspaces)
 - [ ] Git integration (branch indicator, status)
 - [ ] Customizable themes
 - [ ] Plugin system
@@ -260,8 +265,8 @@ A three-pane desktop application that organizes work by terminal context, allowi
 
 ## Success Metrics
 
-- User can create and manage 5+ terminals without performance degradation
-- Context switch (terminal to terminal) feels instant (<100ms perceived)
+- User can create and manage 5+ workspaces without performance degradation
+- Context switch (workspace to workspace) feels instant (<100ms perceived)
 - File tree loads directories with 1000+ files without blocking UI
 - App startup time < 3 seconds
 
@@ -279,6 +284,8 @@ A three-pane desktop application that organizes work by terminal context, allowi
 ## Appendix
 
 ### Terminology
-- **Terminal Context:** A terminal session and its associated working directory
-- **Active Item:** The currently selected terminal or file shown in the center pane
-- **Parent Terminal:** The terminal under which a file was opened (determines its context)
+- **Workspace:** A PTY terminal session and its associated working directory, created via the `+` button
+- **Agent:** An AI-powered session created from Copilot Chat that works autonomously in a repository
+- **Subagent:** An internal sub-task spawned by the SDK within an agent session
+- **Active Item:** The currently selected workspace, agent, or file shown in the center pane
+- **Parent Workspace:** The workspace under which a file was opened (determines its context)

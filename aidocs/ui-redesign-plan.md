@@ -2,7 +2,7 @@
 
 ## Overview
 
-Redesign the Multi-Repo Terminal app with a **modern minimal** aesthetic while preserving the three-pane layout and all existing functionality. Replace emoji icons with VS Code icons, refine typography, and create a cleaner visual hierarchy.
+Redesign the Multi-Repo Workspace app with a **modern minimal** aesthetic while preserving the three-pane layout and all existing functionality. Replace emoji icons with VS Code icons, refine typography, and create a cleaner visual hierarchy.
 
 ## Design Direction
 
@@ -55,7 +55,7 @@ Redesign the Multi-Repo Terminal app with a **modern minimal** aesthetic while p
 - Install `@vscode/codicons` package
 - Use SVG sprite or React component wrapper
 - Key icons needed:
-  - `terminal` - Terminal items
+  - `terminal` - Workspace items
   - `chevron-right` / `chevron-down` - Expand/collapse
   - `file` - Generic file
   - `file-code` - Code files (.ts, .js, .py)
@@ -100,7 +100,7 @@ Redesign the Multi-Repo Terminal app with a **modern minimal** aesthetic while p
 ### Phase 3: Left Pane Redesign
 - [ ] Update pane header (cleaner, more minimal)
 - [ ] Replace `+` text with Codicon `add` icon
-- [ ] Update terminal items with `terminal` icon
+- [ ] Update workspace items with `terminal` icon
 - [ ] Update file items with appropriate file type icons
 - [ ] Refine active/hover states with accent color
 - [ ] Polish context menu styling
@@ -115,7 +115,7 @@ Redesign the Multi-Repo Terminal app with a **modern minimal** aesthetic while p
 
 ### Phase 5: Center Pane Polish
 - [ ] Style empty state with refined typography
-- [ ] Ensure terminal container respects new spacing
+- [ ] Ensure workspace terminal container respects new spacing
 - [ ] Verify Monaco editor theme compatibility
 - [ ] Style file view header/breadcrumbs if present
 
@@ -152,5 +152,5 @@ Redesign the Multi-Repo Terminal app with a **modern minimal** aesthetic while p
 
 - Keep all React component structure intact
 - Only modify styling and icon rendering
-- Test terminal functionality after changes (xterm.js is sensitive to container sizing)
+- Test workspace terminal functionality after changes (xterm.js is sensitive to container sizing)
 - Monaco Editor has its own theming - may need minor adjustments for consistency

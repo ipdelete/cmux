@@ -57,6 +57,9 @@ export interface ElectronAPI {
     onDone: (callback: (messageId: string) => void) => () => void;
     onError: (callback: (messageId: string, error: string) => void) => () => void;
   };
+  config: {
+    autoCopilot: boolean;
+  };
   agentSession: {
     create: (agentId: string, cwd: string, model?: string) => Promise<void>;
     send: (agentId: string, prompt: string) => Promise<void>;
@@ -70,6 +73,9 @@ export interface ElectronAPI {
 }
 
 const electronAPI: ElectronAPI = {
+  config: {
+    autoCopilot: !!process.env.VP_AUTO_COPILOT,
+  },
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   agent: {
     create: (id, cwd, initialCommand) => ipcRenderer.invoke('agent:create', id, cwd, initialCommand),

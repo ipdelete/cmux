@@ -1,19 +1,19 @@
 # cmux
 
-A modern Electron-based agent manager for working across multiple repositories simultaneously. Features a three-pane layout with integrated file browsing and syntax-highlighted file viewing.
+A modern Electron-based workspace and agent manager for working across multiple repositories simultaneously. Features a three-pane layout with integrated file browsing and syntax-highlighted file viewing.
 
 ![Agent View](img/agent-screenshot.png)
 
 ## Features
 
-### 🖥️ Multi-Agent Management
-- Open multiple agent sessions, each in a different directory/repository
+### 🖥️ Multi-Workspace Management
+- Open multiple workspaces, each scoped to a different directory/repository
 - Full PTY support via node-pty - TUI apps like `vim`, `htop`, and GitHub Copilot CLI work perfectly
-- Agent state preserved when switching between views
-- Quick switching between agents via the left sidebar
+- Workspace state preserved when switching between views
+- Quick switching between workspaces via the left sidebar
 
 ### 📁 Integrated File Browser
-- File tree view showing the current agent's working directory
+- File tree view showing the current workspace's working directory
 - Expandable folders with lazy loading
 - Click files to view them with syntax highlighting
 
@@ -25,9 +25,9 @@ A modern Electron-based agent manager for working across multiple repositories s
 ![File View](img/agent-file-screenshot.png)
 
 ### 🎨 Three-Pane Layout
-- **Left Pane**: Agent and file list - see all open agents and their associated files
-- **Center Pane**: Active agent or file viewer
-- **Right Pane**: File tree for the current agent's directory
+- **Left Pane**: Workspace and file list - see all open workspaces and their associated files
+- **Center Pane**: Active workspace or file viewer
+- **Right Pane**: File tree for the current workspace's directory
 
 ### 🔄 Auto-Updates
 - Automatic update checks on startup
@@ -46,7 +46,7 @@ A modern Electron-based agent manager for working across multiple repositories s
 - Each conversation gets its own isolated AI context
 
 ### 🤖 Chat-Driven Agents
-- Create SDK-powered agents from chat: "Create an agent for ~/src/my-project"
+- Create agents from chat: "Create an agent for ~/src/my-project"
 - Agents appear in the left pane with a copilot icon and live status dot
 - **Activity feed** — card-based UI showing tool calls, file reads, edits, and results
 - Agent work is scoped to a local repo folder via `workingDirectory`
@@ -76,23 +76,23 @@ npm start
 
 ## Usage
 
-1. **Create an Agent**: Click the `+` button in the left pane and select a directory
+1. **Create a Workspace**: Click the `+` button in the left pane and select a directory
 2. **Run Commands**: Type in the terminal as you normally would - full shell support
 3. **Browse Files**: Use the right pane to navigate the file tree
 4. **Open Files**: Click any file to view it with syntax highlighting
-5. **Switch Views**: Click agents or files in the left pane to switch between them
-6. **Close Items**: Right-click on agents or files for context menu options
+5. **Switch Views**: Click workspaces or files in the left pane to switch between them
+6. **Close Items**: Right-click on workspaces or files for context menu options
 7. **Chat with Copilot**: Click "Copilot Chat" in the left pane to start a conversation
 8. **Manage Conversations**: Use the right pane to create new conversations, switch between them, or right-click to rename/delete
-9. **Create Agent from Chat**: In Copilot Chat, say "Create an agent for ~/src/my-project" — it creates an SDK agent with a live activity feed
+9. **Create Agent from Chat**: In Copilot Chat, say "Create an agent for ~/src/my-project" — it creates an agent with a live activity feed
 10. **Send Tasks to Agents**: In chat, say "Review the code and summarize" — the agent works autonomously and reports back
 
 ### Keyboard Shortcuts
-- `Ctrl+Tab` - Next agent
-- `Ctrl+Shift+Tab` - Previous agent
-- `Ctrl+Alt+\` - New agent
-- `Ctrl+W` - Close current agent/file
-- `F2` - Rename agent
+- `Ctrl+Tab` - Next workspace
+- `Ctrl+Shift+Tab` - Previous workspace
+- `Ctrl+Alt+\` - New workspace
+- `Ctrl+W` - Close current workspace/file
+- `F2` - Rename workspace
 - `Ctrl+?` - Show keyboard shortcuts help
 - `Ctrl+Shift+I` - Open DevTools
 
@@ -118,7 +118,7 @@ src/
 │   └── types.ts            # Shared TypeScript types
 ├── main/
 │   ├── services/
-│   │   ├── AgentService.ts     # PTY management
+│   │   ├── AgentService.ts     # PTY management (workspaces)
 │   │   ├── AgentSessionService.ts # SDK agent sessions & event mapping
 │   │   ├── CopilotService.ts   # Copilot SDK chat integration
 │   │   ├── ConversationService.ts # Chat conversation persistence
@@ -126,7 +126,7 @@ src/
 │   │   ├── SdkLoader.ts        # Shared CopilotClient singleton
 │   │   └── FileService.ts      # File system operations
 │   └── ipc/
-│       ├── agent.ts        # Agent IPC handlers
+│       ├── agent.ts        # Workspace IPC handlers
 │       ├── agent-session.ts # SDK agent session IPC handlers
 │       ├── copilot.ts      # Copilot chat IPC handlers
 │       ├── conversation.ts # Conversation CRUD IPC handlers
@@ -137,8 +137,8 @@ src/
     │   └── AppStateContext.tsx  # State management
     ├── components/
     │   ├── Layout/         # Three-pane layout
-    │   ├── LeftPane/       # Agent/file list
-    │   ├── CenterPane/     # Agent & file viewer
+    │   ├── LeftPane/       # Workspace/file list
+    │   ├── CenterPane/     # Workspace & file viewer
     │   └── RightPane/      # File tree
     └── styles/
         └── global.css      # Application styles
@@ -160,9 +160,16 @@ npm run package
 npm run make
 ```
 
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VP_AUTO_COPILOT` | unset | When set (e.g. `1`), new workspaces auto-run the `copilot` command on creation |
+| `VP_ALLOW_MULTI` | unset | When set, allows multiple app instances to run simultaneously |
+
 ## Known Limitations
 
-- Agent resize may have slight delay during rapid window resizing
+- Workspace resize may have slight delay during rapid window resizing
 - Some complex TUI applications may have minor rendering differences compared to native terminals
 - Copilot Chat requires `gh` CLI authentication — run `gh auth login` before using
 - Restored chat conversations display previous messages but the AI does not retain context from prior sessions

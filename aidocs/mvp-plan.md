@@ -1,8 +1,8 @@
-# Implementation Plan: Multi-Repo Terminal Manager MVP
+# Implementation Plan: Multi-Repo Workspace Manager MVP
 
 ## Overview
 
-Build an Electron app with a three-pane layout for managing multiple terminal sessions across repositories with integrated file browsing.
+Build an Electron app with a three-pane layout for managing multiple workspaces across repositories with integrated file browsing and AI agents.
 
 **Tech Stack:**
 - Electron + Electron Forge
@@ -23,7 +23,7 @@ Build an Electron app with a three-pane layout for managing multiple terminal se
 |-------|------|--------------|
 | Unit | Jest | Pure functions, state reducers, utilities, services (mocked IO) |
 | Component | React Testing Library | Component rendering, user interactions, state changes |
-| Integration | Playwright | Full app flows, IPC communication, terminal + file tree interaction |
+| Integration | Playwright | Full app flows, IPC communication, workspace + file tree interaction |
 
 **TDD Approach:**
 - Write tests FIRST for state management, services, and component behavior
@@ -56,22 +56,22 @@ Build an Electron app with a three-pane layout for managing multiple terminal se
 - [x] **Write component tests for ThreePaneLayout** ✅ 3 tests
 - [x] Create three-pane layout component (Left, Center, Right)
 - [x] **Write component tests for LeftPane** ✅ 7 tests
-- [x] Build LeftPane component with terminal/file list
+- [x] Build LeftPane component with workspace/file list
 
-### Phase 3: Terminal Integration (F1, F2) - In Progress
-- [x] TerminalService in main process (child_process fallback - pty needs Spectre libs)
-- [x] Set up terminal IPC handlers
-- [x] **Write component tests for TerminalItem** (covered in LeftPane tests)
-- [x] Implement TerminalItem component (integrated in LeftPane)
-- [x] Create xterm.js wrapper component (TerminalView)
-- [x] Connect xterm.js to terminal via IPC
+### Phase 3: Workspace Integration (F1, F2) - In Progress
+- [x] AgentService in main process (child_process fallback - pty needs Spectre libs)
+- [x] Set up workspace IPC handlers
+- [x] **Write component tests for WorkspaceItem** (covered in LeftPane tests)
+- [x] Implement WorkspaceItem component (integrated in LeftPane)
+- [x] Create xterm.js wrapper component (AgentView)
+- [x] Connect xterm.js to workspace via IPC
 - [x] **Write component tests for "+" button** (covered in LeftPane tests)
-- [x] Add "+" button to create new terminal (with directory picker)
-- [x] Display terminals in left pane list
-- [x] Implement terminal selection (click to switch)
-- [x] Terminal state preserved when switching (hidden/shown, not destroyed)
-- [x] Add close terminal functionality (right-click context menu)
-- [x] Auto-open default terminal on app launch (user's home directory)
+- [x] Add "+" button to create new workspace (with directory picker)
+- [x] Display workspaces in left pane list
+- [x] Implement workspace selection (click to switch)
+- [x] Workspace state preserved when switching (hidden/shown, not destroyed)
+- [x] Add close workspace functionality (right-click context menu)
+- [x] Auto-open default workspace on app launch (user's home directory)
 
 ### Phase 4: File Tree (F3) - Next
 - [ ] **TDD: Write tests for FileService.readDirectory (returns sorted files/folders, handles errors)**
@@ -81,8 +81,8 @@ Build an Electron app with a three-pane layout for managing multiple terminal se
 - [ ] **Write component tests for FileTree (renders nodes, expand/collapse, click handlers)**
 - [ ] Build file tree React component with expand/collapse
 - [ ] Add file/folder icons
-- [ ] Connect file tree to current terminal's working directory via IPC
-- [ ] **Integration test: Switch terminal → file tree updates to new cwd**
+- [ ] Connect file tree to current workspace's working directory via IPC
+- [ ] **Integration test: Switch workspace → file tree updates to new cwd**
 - [ ] Implement right-click context menu (Open file, Copy path)
 
 ### Phase 5: File Viewing (F4)
@@ -91,24 +91,24 @@ Build an Electron app with a three-pane layout for managing multiple terminal se
 - [ ] Create Monaco Editor wrapper component (integration test only)
 - [ ] **Write component tests for FileItem in left pane (renders name, active state, close button)**
 - [ ] Implement FileItem component
-- [ ] **TDD: Write tests for state logic: opening file adds to terminal's openFiles**
+- [ ] **TDD: Write tests for state logic: opening file adds to workspace's openFiles**
 - [ ] Handle file opening from tree (click → load in center pane)
-- [ ] Add opened files as children under terminal in left pane
-- [ ] **Write component tests for CenterPane (switches between terminal and file views)**
-- [ ] Switch center pane between terminal and file views
+- [ ] Add opened files as children under workspace in left pane
+- [ ] **Write component tests for CenterPane (switches between workspace and file views)**
+- [ ] Switch center pane between workspace and file views
 - [ ] **Integration test: Click file in tree → file opens in center → appears in left pane**
 - [ ] Implement close file functionality
-- [ ] **Integration test: Close file → removed from left pane → returns to terminal view**
+- [ ] **Integration test: Close file → removed from left pane → returns to workspace view**
 
 ### Phase 6: Context Switching & Polish (F5)
-- [ ] **Integration test: Click terminal → center pane shows terminal AND file tree updates**
-- [ ] Ensure clicking terminal updates center pane AND file tree
-- [ ] **Integration test: Click file → center pane shows file, file tree stays on terminal's dir**
-- [ ] Ensure clicking file updates center pane only (tree stays on terminal's directory)
+- [ ] **Integration test: Click workspace → center pane shows workspace AND file tree updates**
+- [ ] Ensure clicking workspace updates center pane AND file tree
+- [ ] **Integration test: Click file → center pane shows file, file tree stays on workspace's dir**
+- [ ] Ensure clicking file updates center pane only (tree stays on workspace's directory)
 - [ ] Add visual indicator for active item in left pane
 - [ ] **Integration test: Keyboard shortcuts trigger correct actions**
 - [ ] Implement basic keyboard shortcuts (Ctrl+Shift+T, Ctrl+W)
-- [ ] Add basic menu bar (File → New Terminal, Exit)
+- [ ] Add basic menu bar (File → New Workspace, Exit)
 - [ ] Basic styling/theming (dark theme)
 
 ### Phase 7: Testing & Packaging
@@ -124,7 +124,7 @@ Build an Electron app with a three-pane layout for managing multiple terminal se
 ## Project Structure
 
 ```
-multi-repo-terminal/
+multi-repo-workspace/
 ├── package.json
 ├── forge.config.ts
 ├── tsconfig.json
@@ -132,10 +132,10 @@ multi-repo-terminal/
 │   ├── main/                    # Electron main process
 │   │   ├── index.ts             # Main entry, window creation
 │   │   ├── ipc/                  # IPC handlers
-│   │   │   ├── terminal.ts      # node-pty management
+│   │   │   ├── agent.ts         # Workspace PTY management
 │   │   │   └── filesystem.ts    # File tree & file reading
 │   │   └── services/
-│   │       ├── TerminalService.ts
+│   │       ├── AgentService.ts
 │   │       └── FileService.ts
 │   ├── preload/
 │   │   └── index.ts             # Preload script, expose APIs
@@ -149,11 +149,11 @@ multi-repo-terminal/
 │   │   │   │   └── ResizableDivider.tsx
 │   │   │   ├── LeftPane/
 │   │   │   │   ├── LeftPane.tsx
-│   │   │   │   ├── TerminalItem.tsx
+│   │   │   │   ├── WorkspaceItem.tsx
 │   │   │   │   └── FileItem.tsx
 │   │   │   ├── CenterPane/
 │   │   │   │   ├── CenterPane.tsx
-│   │   │   │   ├── TerminalView.tsx
+│   │   │   │   ├── AgentView.tsx
 │   │   │   │   └── FileView.tsx
 │   │   │   └── RightPane/
 │   │   │       ├── RightPane.tsx
@@ -176,23 +176,24 @@ multi-repo-terminal/
 
 ```typescript
 interface AppState {
-  terminals: Terminal[];
-  activeItemId: string | null;  // terminal or file ID
-  activeTerminalId: string | null;  // for file tree context
+  agents: Agent[];               // workspaces + agents share this type
+  activeItemId: string | null;   // workspace, agent, or file ID
+  activeAgentId: string | null;  // for file tree context
 }
 
-interface Terminal {
+interface Agent {
   id: string;
   label: string;
   cwd: string;
   openFiles: OpenFile[];
+  hasSession?: boolean;          // true = chat-created agent, false/undefined = workspace
 }
 
 interface OpenFile {
   id: string;
   path: string;
   name: string;
-  parentTerminalId: string;
+  parentAgentId: string;
 }
 ```
 
@@ -219,10 +220,10 @@ interface OpenFile {
 
 | Channel | Direction | Purpose |
 |---------|-----------|---------|
-| `terminal:create` | renderer → main | Spawn new terminal |
-| `terminal:write` | renderer → main | Send input to terminal |
-| `terminal:resize` | renderer → main | Resize terminal |
-| `terminal:kill` | renderer → main | Close terminal |
+| `terminal:create` | renderer → main | Spawn new workspace terminal |
+| `terminal:write` | renderer → main | Send input to workspace |
+| `terminal:resize` | renderer → main | Resize workspace terminal |
+| `terminal:kill` | renderer → main | Close workspace |
 | `terminal:data` | main → renderer | Terminal output |
 | `fs:readdir` | renderer → main | Get directory contents |
 | `fs:readfile` | renderer → main | Get file contents |
@@ -234,7 +235,7 @@ interface OpenFile {
 
 1. **node-pty native module** - Requires rebuild for Electron. Electron Forge handles this, but watch for issues.
 2. **Monaco Editor bundle size** - Large; consider lazy loading.
-3. **Terminal state preservation** - xterm.js maintains buffer; just hide/show, don't destroy.
+3. **Workspace state preservation** - xterm.js maintains buffer; just hide/show, don't destroy.
 4. **Cross-platform shells** - Test shell detection on all platforms.
 5. **Testing xterm.js/Monaco** - These are hard to unit test; rely on integration tests for rendering verification.
 6. **IPC mocking** - Create mock preload API for renderer component tests.
@@ -247,8 +248,8 @@ interface OpenFile {
 src/
 ├── main/
 │   ├── services/
-│   │   ├── TerminalService.ts
-│   │   ├── TerminalService.test.ts    # Unit tests with mocked node-pty
+│   │   ├── AgentService.ts
+│   │   ├── AgentService.test.ts    # Unit tests with mocked node-pty
 │   │   ├── FileService.ts
 │   │   └── FileService.test.ts        # Unit tests with mocked fs
 ├── renderer/
@@ -271,7 +272,7 @@ src/
 tests/
 └── e2e/
     ├── app.spec.ts                     # Smoke tests
-    ├── terminal.spec.ts                # Terminal flow tests
+    ├── workspace.spec.ts               # Workspace flow tests
     └── fileTree.spec.ts                # File browsing tests
 ```
 
@@ -285,3 +286,4 @@ tests/
 - Git integration
 - Themes/customization
 - Keyboard shortcuts beyond basics
+- Chat-driven agents (post-MVP feature)
