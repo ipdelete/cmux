@@ -58,9 +58,18 @@ A modern Electron-based workspace and agent manager for working across multiple 
 ### Prerequisites
 - Node.js 18+ 
 - npm 9+
-- GitHub CLI (`gh`) authenticated via `gh auth login` (required for Copilot Chat)
+- GitHub CLI (`gh`) authenticated via `gh auth login`
+- Copilot CLI and SDK:
 
-### Setup
+```bash
+npm install -g @github/copilot @github/copilot-sdk
+```
+
+### Install from Releases
+
+Download the latest release: https://github.com/ipdelete/cmux/releases
+
+### Run from Source
 
 ```bash
 # Clone the repository
