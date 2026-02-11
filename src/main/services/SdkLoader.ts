@@ -19,6 +19,126 @@ let startPromise: Promise<CopilotClientType> | null = null;
 
 let cachedPrefix: string | null = null;
 
+/** Parse a `prefix=` value from an .npmrc file, returning null if not found. */
+function parseNpmrcPrefix(rcPath: string): string | null {
+  try {
+    const content = fs.readFileSync(rcPath, 'utf-8');
+    for (const line of content.split(/\r?\n/)) {
+      const match = line.match(/^\s*prefix\s*=\s*(.+)/);
+      if (match) return match[1].trim();
+    }
+  } catch { /* file not found or unreadable */ }
+  return null;
+}
+
+/**
+ * Resolve the user's real shell PATH.
+ * GUI-launched Electron apps (especially on macOS) inherit a minimal system
+ * PATH that typically excludes /usr/local/bin, nvm, volta, fnm, etc.
+ * We ask the user's login shell to echo $PATH so we can find npm.
+ */
+function getUserShellPath(): string {
+  if (isWindows) return process.env.PATH || '';
+
+  try {
+    const shell = process.env.SHELL || '/bin/zsh';
+    // -ilc: interactive login shell sources .zshrc/.bashrc/.profile
+    return execSync(`${shell} -ilc "echo \\$PATH"`, {
+      encoding: 'utf-8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+  } catch {
+    return process.env.PATH || '';
+  }
+}
+
+/**
+ * Check whether a candidate npm global prefix actually contains the SDK.
+ * Returns the node_modules dir if found, null otherwise.
+ */
+function hasGlobalSdk(prefix: string): string | null {
+  const modulesDir = isWindows
+    ? path.join(prefix, 'node_modules')
+    : path.join(prefix, 'lib', 'node_modules');
+  if (fs.existsSync(path.join(modulesDir, '@github', 'copilot-sdk', 'package.json'))) {
+    return modulesDir;
+  }
+  return null;
+}
+
+/**
+ * Well-known npm global prefix locations to probe when `npm prefix -g` is
+ * unavailable (packaged Electron with no npm on PATH).
+ */
+function getWellKnownPrefixes(): string[] {
+  const home = os.homedir();
+  const prefixes: string[] = [];
+
+  if (isWindows) {
+    // Custom prefix from user ~/.npmrc (e.g. prefix=C:\ProgramData\global-npm)
+    const userPrefix = parseNpmrcPrefix(path.join(home, '.npmrc'));
+    if (userPrefix) prefixes.push(userPrefix);
+
+    // Custom prefix from builtin npmrc shipped with Node.js
+    for (const envKey of ['ProgramFiles', 'ProgramFiles(x86)'] as const) {
+      const pf = process.env[envKey];
+      if (pf) {
+        const builtinRc = path.join(pf, 'nodejs', 'node_modules', 'npm', 'npmrc');
+        const p = parseNpmrcPrefix(builtinRc);
+        if (p) prefixes.push(p);
+      }
+    }
+
+    // npm default on Windows
+    if (process.env.APPDATA) {
+      prefixes.push(path.join(process.env.APPDATA, 'npm'));
+    }
+  } else {
+    // Homebrew / default system npm on macOS
+    prefixes.push('/usr/local');
+    // Apple Silicon Homebrew
+    prefixes.push('/opt/homebrew');
+    // Linux system default
+    prefixes.push('/usr');
+
+    // nvm — scan version dirs (most recent first)
+    const nvmDir = path.join(home, '.nvm', 'versions', 'node');
+    if (fs.existsSync(nvmDir)) {
+      try {
+        const versions = fs.readdirSync(nvmDir).sort().reverse();
+        for (const v of versions) {
+          prefixes.push(path.join(nvmDir, v));
+        }
+      } catch { /* ignore */ }
+    }
+
+    // volta
+    const voltaNodeDir = path.join(home, '.volta', 'tools', 'image', 'node');
+    if (fs.existsSync(voltaNodeDir)) {
+      try {
+        const versions = fs.readdirSync(voltaNodeDir).sort().reverse();
+        for (const v of versions) {
+          prefixes.push(path.join(voltaNodeDir, v));
+        }
+      } catch { /* ignore */ }
+    }
+
+    // fnm
+    const fnmDir = path.join(home, '.local', 'share', 'fnm', 'node-versions');
+    if (fs.existsSync(fnmDir)) {
+      try {
+        const versions = fs.readdirSync(fnmDir).sort().reverse();
+        for (const v of versions) {
+          prefixes.push(path.join(fnmDir, v, 'installation'));
+        }
+      } catch { /* ignore */ }
+    }
+  }
+
+  return prefixes;
+}
+
 function getNpmGlobalPrefix(): string {
   if (cachedPrefix) return cachedPrefix;
 
@@ -31,15 +151,40 @@ function getNpmGlobalPrefix(): string {
     }
   }
 
-  // 2. Shell out to npm (works on every OS)
+  // 2. Try `npm prefix -g` with the current PATH
   try {
     cachedPrefix = execSync('npm prefix -g', { encoding: 'utf-8' }).trim();
     return cachedPrefix;
   } catch {
-    throw new Error(
-      'Could not determine npm global prefix. Is npm installed?'
-    );
+    // npm not found on current PATH — expected in packaged Electron
   }
+
+  // 3. Resolve the user's real shell PATH and retry
+  //    (GUI-launched Electron apps get a minimal PATH that misses npm)
+  try {
+    const shellPath = getUserShellPath();
+    if (shellPath && shellPath !== process.env.PATH) {
+      cachedPrefix = execSync('npm prefix -g', {
+        encoding: 'utf-8',
+        env: { ...process.env, PATH: shellPath },
+      }).trim();
+      return cachedPrefix;
+    }
+  } catch {
+    // Still can't find npm — fall through to well-known locations
+  }
+
+  // 4. Probe well-known prefix locations for the SDK directly
+  for (const prefix of getWellKnownPrefixes()) {
+    if (hasGlobalSdk(prefix)) {
+      cachedPrefix = prefix;
+      return cachedPrefix;
+    }
+  }
+
+  throw new Error(
+    'Could not determine npm global prefix. Is npm installed and is @github/copilot-sdk installed globally?'
+  );
 }
 
 function getGlobalNodeModules(): string {
