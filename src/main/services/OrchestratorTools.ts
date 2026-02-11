@@ -158,6 +158,11 @@ export function registerAgent(agentId: string, label: string, cwd: string): void
   managedAgents.set(agentId, { label, cwd });
 }
 
+/** Remove an agent from orchestrator tracking (called when agent is closed). */
+export function unregisterAgent(agentId: string): void {
+  managedAgents.delete(agentId);
+}
+
 export function getActiveAgents(): Array<{ agentId: string; label: string; cwd: string }> {
   return Array.from(managedAgents.entries()).map(([agentId, info]) => ({
     agentId,

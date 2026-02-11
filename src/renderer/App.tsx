@@ -106,6 +106,10 @@ function AppContent() {
   };
 
   const handleCloseAgent = (agentId: string) => {
+    const agent = state.agents.find(a => a.id === agentId);
+    if (agent?.hasSession) {
+      window.electronAPI.agentSession.destroy(agentId);
+    }
     window.electronAPI.agent.kill(agentId);
     dispatch({ type: 'REMOVE_AGENT', payload: { id: agentId } });
   };

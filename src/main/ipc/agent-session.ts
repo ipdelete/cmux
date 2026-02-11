@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { agentSessionService } from '../services/AgentSessionService';
+import { unregisterAgent } from '../services/OrchestratorTools';
 
 export function setupAgentSessionIPC(mainWindow: BrowserWindow): void {
   // Route agent session events to renderer
@@ -24,5 +25,6 @@ export function setupAgentSessionIPC(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('agent-session:destroy', async (_event, agentId: string) => {
     await agentSessionService.destroySession(agentId);
+    unregisterAgent(agentId);
   });
 }
