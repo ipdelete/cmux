@@ -103,7 +103,16 @@ async function main() {
   }
 
   fs.rmSync(targetDir, { recursive: true, force: true });
-  fs.renameSync(extractedDir, targetDir);
+  try {
+    fs.renameSync(extractedDir, targetDir);
+  } catch (error) {
+    if (error && error.code === 'EXDEV') {
+      fs.cpSync(extractedDir, targetDir, { recursive: true });
+      fs.rmSync(extractedDir, { recursive: true, force: true });
+    } else {
+      throw error;
+    }
+  }
   fs.writeFileSync(markerPath, version, 'utf-8');
 
   console.log(`Bundled Node runtime ready at ${targetDir}`);
