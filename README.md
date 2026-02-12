@@ -20,15 +20,11 @@ See [Features](docs/features.md) for details.
 ## Installation
 
 ### Prerequisites
-- Node.js 18+
-- npm 9+
-- Copilot CLI and SDK:
+- Node.js 18+ (required for running from source)
+- npm 9+ (required for running from source)
 
-```bash
-npm install -g @github/copilot @github/copilot-sdk
-```
-
-Packaged builds bootstrap Copilot on first use. Global installs are still required for running from source.
+Packaged builds bundle Node plus the Copilot CLI/SDK and bootstrap them on first use. If you're running from
+source, install the Copilot CLI/SDK using your preferred method so cmux can find them.
 
 On first launch, use the `/login` command in the Copilot CLI to authenticate with your GitHub account.
 
@@ -66,7 +62,7 @@ npm run make       # Create distributable
 
 - Workspace resize may have slight delay during rapid window resizing
 - Some complex TUI applications may have minor rendering differences compared to native terminals
-- Copilot Chat requires authentication — use `/login` in the Copilot CLI on first run
+- Copilot Chat requires authentication — use `/login` in the Copilot CLI on first use
 - Restored chat conversations display previous messages but the AI does not retain context from prior sessions
 
 ## Contributing

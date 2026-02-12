@@ -2,13 +2,10 @@
 
 ## Prerequisites
 
-- Node.js 18+
-- npm 9+
-- Copilot CLI and SDK installed globally:
+- Node.js 18+ (required for running from source)
+- npm 9+ (required for running from source)
 
-```bash
-npm install -g @github/copilot @github/copilot-sdk
-```
+Packaged builds bundle Node plus the Copilot CLI/SDK and bootstrap them on first use.
 
 On first launch, use the `/login` command in the Copilot CLI to authenticate with your GitHub account.
 
@@ -18,7 +15,7 @@ Download the latest release for your platform:
 
 https://github.com/ipdelete/cmux/releases
 
-Run the installer — no additional setup needed beyond the prerequisites above.
+Run the installer — no additional setup needed beyond signing in to Copilot on first use.
 
 ## Option 2: Clone & Run from Source
 
@@ -28,6 +25,8 @@ cd cmux
 npm install
 npm start
 ```
+
+If you're running from source, install the Copilot CLI/SDK using your preferred method so cmux can find them.
 
 ## First Launch
 

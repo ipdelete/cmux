@@ -14,13 +14,10 @@ npm install
 
 - Node.js 18+
 - npm 9+
-- Copilot CLI and SDK:
+- Copilot CLI and SDK (required for development builds)
 
-```bash
-npm install -g @github/copilot @github/copilot-sdk
-```
-
-Packaged builds bootstrap Copilot on first use. Global installs are still required for development.
+Packaged builds bundle Node plus the Copilot CLI/SDK and bootstrap them on first use. For development builds,
+install the Copilot CLI/SDK using your preferred method so cmux can find them.
 
 On first launch, use the `/login` command in the Copilot CLI to authenticate.
 

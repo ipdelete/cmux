@@ -50,4 +50,4 @@ Right-click a conversation and select **Delete**. This removes it from disk perm
 
 - Conversations are saved to disk automatically and restored on restart
 - The AI does **not** retain context from prior sessions — restored conversations show previous messages for reference, but the AI starts fresh
-- On first use, authenticate with `/login` in the Copilot CLI
+- On first use, authenticate with `/login` in the Copilot CLI (bundled in release builds)
