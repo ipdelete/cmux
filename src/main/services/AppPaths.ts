@@ -28,3 +28,18 @@ export function getCopilotChatLogPath(): string {
 export function getCopilotLogsDir(): string {
   return path.join(getUserDataDir(), 'copilot', 'logs');
 }
+
+export function getCopilotBootstrapDir(): string {
+  return path.join(getUserDataDir(), 'copilot');
+}
+
+export function getCopilotLocalNodeModulesDir(): string {
+  return path.join(getCopilotBootstrapDir(), 'node_modules');
+}
+
+export function getBundledNodeRoot(): string | null {
+  const override = process.env.CMUX_NODE_RUNTIME_DIR;
+  if (override) return override;
+  if (!app.isPackaged) return null;
+  return path.join(process.resourcesPath, 'node');
+}

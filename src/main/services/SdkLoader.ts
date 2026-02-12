@@ -9,6 +9,12 @@ import * as os from 'os';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 import { getCopilotLogsDir } from './AppPaths';
+import {
+  ensureCopilotInstalled,
+  getLocalCopilotCliPath,
+  getLocalCopilotNodeModulesDir,
+  isLocalCopilotInstallReady,
+} from './CopilotBootstrap';
 
 type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
 
@@ -203,15 +209,64 @@ function getGlobalNodeModules(): string {
   return modulesDir;
 }
 
-function getCopilotCliPath(): string {
+function getLocalNodeModulesDir(): string | null {
+  if (!isLocalCopilotInstallReady()) {
+    return null;
+  }
+  return getLocalCopilotNodeModulesDir();
+}
+
+function getCliPathFromModules(modulesDir: string): string | null {
+  const nestedCli = path.join(
+    modulesDir,
+    '@github',
+    'copilot-sdk',
+    'node_modules',
+    '@github',
+    'copilot',
+    'npm-loader.js',
+  );
+  if (fs.existsSync(nestedCli)) return nestedCli;
+
+  const flatCli = path.join(modulesDir, '@github', 'copilot', 'npm-loader.js');
+  if (fs.existsSync(flatCli)) return flatCli;
+
+  return null;
+}
+
+async function getCopilotNodeModules(): Promise<string> {
+  let bootstrapError: unknown = null;
+
+  try {
+    await ensureCopilotInstalled();
+  } catch (error) {
+    bootstrapError = error;
+  }
+
+  const localModules = getLocalNodeModulesDir();
+  if (localModules) {
+    return localModules;
+  }
+
+  if (bootstrapError) {
+    console.warn('[SdkLoader] Copilot bootstrap failed, falling back to global install:', bootstrapError);
+  }
+
+  return getGlobalNodeModules();
+}
+
+async function getCopilotCliPath(): Promise<string> {
+  const localCli = getLocalCopilotCliPath();
+  if (localCli) {
+    return localCli;
+  }
+
   // The SDK spawns the CLI via child_process.spawn(). When cliPath ends with .js,
   // the SDK spawns `node <path>`. On Windows, .cmd files can't be spawned directly
   // without shell:true, so we return the .js entry point instead.
-  const globalModules = getGlobalNodeModules();
-
-  // Path to the CLI's JS entry point (works cross-platform via SDK's node detection)
-  const jsEntry = path.join(globalModules, '@github', 'copilot-sdk', 'node_modules', '@github', 'copilot', 'npm-loader.js');
-  if (fs.existsSync(jsEntry)) {
+  const modulesDir = await getCopilotNodeModules();
+  const jsEntry = getCliPathFromModules(modulesDir);
+  if (jsEntry) {
     return jsEntry;
   }
 
@@ -226,14 +281,14 @@ function getCopilotCliPath(): string {
   }
 
   throw new Error(
-    '@github/copilot CLI not found. Run: npm install -g @github/copilot-sdk'
+    '@github/copilot CLI not found. Please install @github/copilot-sdk or reconnect your network to bootstrap.'
   );
 }
 
 export async function loadSdk(): Promise<typeof import('@github/copilot-sdk')> {
   if (!sdkModule) {
-    const globalModules = getGlobalNodeModules();
-    const sdkEntry = path.join(globalModules, '@github', 'copilot-sdk', 'dist', 'index.js');
+    const modulesDir = await getCopilotNodeModules();
+    const sdkEntry = path.join(modulesDir, '@github', 'copilot-sdk', 'dist', 'index.js');
     // Use new Function to hide import() from webpack's static analysis,
     // but point it at the real filesystem path via pathToFileURL
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
@@ -250,7 +305,7 @@ export async function getSharedClient(): Promise<CopilotClientType> {
 
   startPromise = (async () => {
     const { CopilotClient } = await loadSdk();
-    const cliPath = getCopilotCliPath();
+    const cliPath = await getCopilotCliPath();
     const logDir = getCopilotLogsDir();
     fs.mkdirSync(logDir, { recursive: true });
     clientInstance = new CopilotClient({

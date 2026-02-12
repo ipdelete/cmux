@@ -1,0 +1,115 @@
+/* eslint-disable no-console */
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const https = require('https');
+const { spawnSync } = require('child_process');
+
+const repoRoot = path.resolve(__dirname, '..');
+const targetDir = path.join(repoRoot, 'resources', 'node');
+const markerPath = path.join(targetDir, 'version.txt');
+
+function readNvmrcVersion() {
+  try {
+    const content = fs.readFileSync(path.join(repoRoot, '.nvmrc'), 'utf-8').trim();
+    if (content) return content;
+  } catch {
+    // ignore
+  }
+  return '18';
+}
+
+function resolveVersion() {
+  const raw = process.env.CMUX_NODE_VERSION || readNvmrcVersion();
+  if (/^\d+$/.test(raw)) {
+    return `${raw}.20.5`;
+  }
+  return raw.replace(/^v/, '');
+}
+
+function resolveDist(version) {
+  const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
+  switch (process.platform) {
+    case 'win32':
+      return { dist: `node-v${version}-win-${arch}`, ext: 'zip' };
+    case 'darwin':
+      return { dist: `node-v${version}-darwin-${arch}`, ext: 'tar.gz' };
+    case 'linux':
+      return { dist: `node-v${version}-linux-${arch}`, ext: 'tar.gz' };
+    default:
+      throw new Error(`Unsupported platform: ${process.platform}`);
+  }
+}
+
+function runCommand(command, args) {
+  const result = spawnSync(command, args, { stdio: 'inherit' });
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+  }
+}
+
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dest);
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`Failed to download ${url}: ${res.statusCode}`));
+        return;
+      }
+      res.pipe(file);
+      file.on('finish', () => file.close(resolve));
+    }).on('error', (err) => {
+      fs.unlink(dest, () => reject(err));
+    });
+  });
+}
+
+async function main() {
+  const version = resolveVersion();
+  const { dist, ext } = resolveDist(version);
+  const nodeBinary = process.platform === 'win32'
+    ? path.join(targetDir, 'node.exe')
+    : path.join(targetDir, 'bin', 'node');
+
+  if (fs.existsSync(markerPath) && fs.existsSync(nodeBinary)) {
+    const existing = fs.readFileSync(markerPath, 'utf-8').trim();
+    if (existing === version) {
+      console.log(`Bundled Node runtime already present (v${version}).`);
+      return;
+    }
+  }
+
+  const url = `https://nodejs.org/dist/v${version}/${dist}.${ext}`;
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cmux-node-'));
+  const archivePath = path.join(tempDir, `${dist}.${ext}`);
+
+  console.log(`Downloading ${url}`);
+  await downloadFile(url, archivePath);
+
+  console.log('Extracting Node runtime...');
+  if (ext === 'zip') {
+    runCommand('powershell', [
+      '-NoProfile',
+      '-Command',
+      `Expand-Archive -Path "${archivePath}" -DestinationPath "${tempDir}" -Force`,
+    ]);
+  } else {
+    runCommand('tar', ['-xzf', archivePath, '-C', tempDir]);
+  }
+
+  const extractedDir = path.join(tempDir, dist);
+  if (!fs.existsSync(extractedDir)) {
+    throw new Error(`Extracted Node directory not found: ${extractedDir}`);
+  }
+
+  fs.rmSync(targetDir, { recursive: true, force: true });
+  fs.renameSync(extractedDir, targetDir);
+  fs.writeFileSync(markerPath, version, 'utf-8');
+
+  console.log(`Bundled Node runtime ready at ${targetDir}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

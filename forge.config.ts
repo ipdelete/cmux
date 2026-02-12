@@ -24,7 +24,7 @@ const config: ForgeConfig = {
     asar: true,
     icon: './img/cmux-icon',
     executableName: 'cmux',
-    extraResource: ['./app-update.yml'],
+    extraResource: ['./app-update.yml', './resources/node'],
     ...(enableMacOSSigning
       ? {
           // Triggers @electron/osx-sign; identity auto-discovered from keychain.

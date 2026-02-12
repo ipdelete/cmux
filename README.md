@@ -28,6 +28,8 @@ See [Features](docs/features.md) for details.
 npm install -g @github/copilot @github/copilot-sdk
 ```
 
+Packaged builds bootstrap Copilot on first use. Global installs are still required for running from source.
+
 On first launch, use the `/login` command in the Copilot CLI to authenticate with your GitHub account.
 
 ### Install from Releases

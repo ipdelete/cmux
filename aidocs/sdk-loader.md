@@ -2,16 +2,19 @@
 
 ## The Problem
 
-`@github/copilot-sdk` is **ESM-only** and spawns `@github/copilot` CLI as a child process. This creates two challenges in Electron:
+`@github/copilot-sdk` is **ESM-only** and spawns `@github/copilot` CLI as a child process. This creates challenges in Electron:
 
 1. **Asar incompatibility** — both the SDK and CLI must live on the real filesystem, not inside Electron's asar archive. They can't be bundled by webpack.
 2. **Missing PATH in packaged apps** — GUI-launched Electron apps inherit a minimal system PATH that excludes `/usr/local/bin`, nvm, volta, fnm, and other Node version managers. `npm` isn't on PATH, so the globally-installed SDK can't be located via `npm prefix -g`.
+3. **Fresh machine installs** — packaged apps run on machines with no global Copilot CLI/SDK and sometimes no Node/npm at all.
 
 ## Architecture
 
 ```
 SdkLoader (singleton)
   │
+  ├── ensureCopilotInstalled() → bootstrap local SDK/CLI using bundled Node+npm
+  ├── getCopilotNodeModules()  → prefer local userData install, fallback to global
   ├── getNpmGlobalPrefix()     → 4-tier resolution to find npm global install
   ├── getGlobalNodeModules()   → maps prefix → node_modules dir (OS-aware)
   ├── getCopilotCliPath()      → finds @github/copilot JS entry point
@@ -19,7 +22,17 @@ SdkLoader (singleton)
   └── getSharedClient()        → singleton CopilotClient shared by all services
 ```
 
-## npm Global Prefix Resolution (4 tiers)
+## Local Bootstrap (Tier 0)
+
+Packaged apps ship a bundled Node+npm runtime and install `@github/copilot-sdk` into a userData-local prefix:
+
+```
+{userData}/copilot/node_modules/@github/copilot-sdk
+```
+
+`ensureCopilotInstalled()` runs npm with a local prefix and cache inside userData. `SdkLoader` prefers this local install before falling back to global locations.
+
+## npm Global Prefix Resolution (fallback, 4 tiers)
 
 `getNpmGlobalPrefix()` tries four strategies in order, caching the first success:
 
