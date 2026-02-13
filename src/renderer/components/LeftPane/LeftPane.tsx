@@ -99,7 +99,7 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
         {state.agents.length === 0 ? (
           <p className="empty-message">No agents open</p>
         ) : (
-          <ul className="agent-list">
+          <ul className="agent-list" role="listbox" aria-label="Agents">
             {state.agents.map(agent => (
               <li key={agent.id} className="agent-group">
                 <div
@@ -129,7 +129,7 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
                     <span className="agent-label">{agent.label}</span>
                   )}
                   {agent.hasSession && agent.status && (
-                    <span className={`agent-status-dot ${agent.status}`} title={agent.status} />
+                    <span className={`agent-status-dot ${agent.status}`} title={agent.status} role="status" aria-label={`Agent status: ${agent.status}`} />
                   )}
                 </div>
                 {agent.openFiles.length > 0 && (
@@ -160,14 +160,15 @@ export function LeftPane({ onAddAgent, onCloseAgent, renamingAgentId, onRenameCo
         <div
           className="context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
+          role="menu"
         >
           {contextMenu.target?.fileId ? (
-            <button onClick={handleCloseFile}>
+            <button role="menuitem" onClick={handleCloseFile}>
               <Icon name="close" size="sm" />
               Close File
             </button>
           ) : (
-            <button onClick={handleCloseAgent}>
+            <button role="menuitem" onClick={handleCloseAgent}>
               <Icon name="close" size="sm" />
               Close Agent
             </button>

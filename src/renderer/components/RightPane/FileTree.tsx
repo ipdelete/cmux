@@ -42,7 +42,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
   }
 
   return (
-    <div className="file-tree">
+    <div className="file-tree" role="tree" aria-label="File explorer">
       {rootEntries.map((entry) => (
         <FileTreeNode
           key={entry.path}

@@ -86,12 +86,11 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   const indent = level * 16 + 8;
 
   return (
-    <div>
+    <div role="treeitem" aria-expanded={entry.isDirectory ? isExpanded : undefined} aria-selected={false} aria-label={entry.name}>
       <div
         className={`file-tree-node ${statusClass}`}
         style={{ paddingLeft: `${indent}px` }}
         onClick={handleClick}
-        role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleClick()}
       >
@@ -111,7 +110,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         {loading && <span className="loading">loading...</span>}
       </div>
       {entry.isDirectory && isExpanded && (
-        <div className="file-tree-children">
+        <div className="file-tree-children" role="group">
           {children.map((child) => (
             <FileTreeNode
               key={child.path}
@@ -130,4 +129,4 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
     </div>
   );
 };
-
+

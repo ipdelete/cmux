@@ -10,9 +10,9 @@ interface ThreePaneLayoutProps {
 export function ThreePaneLayout({ leftPane, centerPane, rightPane }: ThreePaneLayoutProps) {
   return (
     <div className="three-pane-layout">
-      <div className="left-pane">{leftPane}</div>
-      <div className="center-pane">{centerPane}</div>
-      <div className="right-pane">{rightPane}</div>
+      <nav className="left-pane" aria-label="Agent workspace">{leftPane}</nav>
+      <main className="center-pane">{centerPane}</main>
+      <aside className="right-pane" aria-label="File explorer">{rightPane}</aside>
     </div>
   );
 }
