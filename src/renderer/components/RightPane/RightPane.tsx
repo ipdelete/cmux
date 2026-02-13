@@ -198,22 +198,24 @@ export function RightPane({ onFileClick }: RightPaneProps) {
     <>
       <div className="pane-header">
         <span>Files</span>
-        <button
-          className="toggle-hidden-button"
-          onClick={handleToggleHidden}
-          title={state.showHiddenFiles ? 'Hide hidden files' : 'Show hidden files'}
-          aria-label={state.showHiddenFiles ? 'Hide hidden files' : 'Show hidden files'}
-        >
-          <Icon name={state.showHiddenFiles ? 'eye' : 'eye-closed'} size="sm" />
-        </button>
-        <button 
-          className="refresh-button" 
-          onClick={handleRefresh}
-          title="Refresh file tree"
-          aria-label="Refresh file tree"
-        >
-          <Icon name="refresh" size="sm" />
-        </button>
+        <div className="pane-header-actions">
+          <button
+            className="toggle-hidden-button"
+            onClick={handleToggleHidden}
+            title={state.showHiddenFiles ? 'Hide hidden files' : 'Show hidden files'}
+            aria-label={state.showHiddenFiles ? 'Hide hidden files' : 'Show hidden files'}
+          >
+            <Icon name={state.showHiddenFiles ? 'eye' : 'eye-closed'} size="sm" />
+          </button>
+          <button 
+            className="refresh-button" 
+            onClick={handleRefresh}
+            title="Refresh file tree"
+            aria-label="Refresh file tree"
+          >
+            <Icon name="refresh" size="sm" />
+          </button>
+        </div>
       </div>
       <div className="pane-content file-tree-container">
         <FileTree 
