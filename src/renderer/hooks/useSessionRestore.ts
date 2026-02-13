@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { AppAction } from '../../shared/types';
+import { createLogger } from '../logger';
+
+const log = createLogger('useSessionRestore');
 
 export function useSessionRestore(dispatch: React.Dispatch<AppAction>): void {
   const hasRestoredRef = useRef(false);
@@ -93,7 +96,7 @@ export function useSessionRestore(dispatch: React.Dispatch<AppAction>): void {
           }
         }
       } catch (error) {
-        console.error('Failed to restore session:', error);
+        log.error('Failed to restore session:', error);
       }
     };
 

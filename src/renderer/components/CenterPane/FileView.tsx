@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { createLogger } from '../../logger';
+
+const log = createLogger('FileView');
 
 interface FileViewProps {
   filePath: string;
@@ -60,7 +63,7 @@ export const FileView: React.FC<FileViewProps> = ({ filePath, fileName }) => {
         setContent(fileContent);
       } catch (err) {
         setError(`Failed to load file: ${err}`);
-        console.error('Error loading file:', err);
+        log.error('Error loading file:', err);
       } finally {
         setLoading(false);
       }

@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { FileEntry } from '../../shared/types';
+import { createLogger } from '../logger';
+
+const log = createLogger('useDirectoryLoader');
 
 export interface UseDirectoryLoaderResult {
   rootEntries: FileEntry[];
@@ -29,7 +32,7 @@ export function useDirectoryLoader(rootPath: string, refreshTrigger: number, sho
       childrenCacheRef.current.set(dirPath, entries);
       return entries;
     } catch (err) {
-      console.error('Error loading directory:', err);
+      log.error('Error loading directory:', err);
       return [];
     }
   }, [showHidden]);
@@ -52,7 +55,7 @@ export function useDirectoryLoader(rootPath: string, refreshTrigger: number, sho
         setRootEntries(entries);
       } catch (err) {
         setError('Failed to load directory');
-        console.error('Error loading directory:', err);
+        log.error('Error loading directory:', err);
       } finally {
         setLoading(false);
       }

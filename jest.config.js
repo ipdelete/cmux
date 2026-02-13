@@ -8,6 +8,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.ts'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '/Logger$': '<rootDir>/src/test/__mocks__/Logger',
   },
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {

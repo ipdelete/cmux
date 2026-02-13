@@ -3,6 +3,9 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
+import { createLogger } from '../../logger';
+
+const log = createLogger('AgentView');
 
 interface AgentViewProps {
   agentId: string;
@@ -125,7 +128,7 @@ export function AgentView({ agentId, cwd, isActive }: AgentViewProps) {
     // Handle terminal exit
     const cleanupOnExit = window.electronAPI.agent.onExit((id, exitCode) => {
       if (id === agentId) {
-        console.log(`Agent ${agentId} exited with code ${exitCode}`);
+        log.info(`Agent ${agentId} exited with code ${exitCode}`);
       }
     });
 

@@ -3,6 +3,9 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getBundledNodeRoot, getCopilotBootstrapDir, getCopilotLocalNodeModulesDir } from './AppPaths';
+import { createLogger } from './Logger';
+
+const log = createLogger('CopilotBootstrap');
 let bootstrapPromise: Promise<void> | null = null;
 const isWindows = process.platform === 'win32';
 
@@ -86,10 +89,10 @@ async function runNpmInstall(): Promise<void> {
     });
 
     child.stdout.on('data', (data) => {
-      console.log(`[CopilotBootstrap] ${data.toString().trim()}`);
+      log.info(data.toString().trim());
     });
     child.stderr.on('data', (data) => {
-      console.warn(`[CopilotBootstrap] ${data.toString().trim()}`);
+      log.warn(data.toString().trim());
     });
 
     child.on('error', (error) => reject(error));
@@ -135,7 +138,7 @@ export async function ensureCopilotInstalled(): Promise<void> {
   }
 
   bootstrapPromise = (async () => {
-    console.log('[CopilotBootstrap] Installing GitHub Copilot runtime...');
+    log.info('Installing GitHub Copilot runtime...');
     await runNpmInstall();
     if (!isLocalCopilotInstallReady()) {
       throw new Error('Copilot runtime installation did not complete.');
@@ -146,7 +149,7 @@ export async function ensureCopilotInstalled(): Promise<void> {
   try {
     await bootstrapPromise;
   } catch (error) {
-    console.error('[CopilotBootstrap] Install failed:', error);
+    log.error('Install failed:', error);
     throw error;
   } finally {
     bootstrapPromise = null;

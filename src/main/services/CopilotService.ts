@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getCopilotChatLogPath, getLogsDir, getUserDataDir } from './AppPaths';
 import { getSharedClient } from './SdkLoader';
+import { createLogger } from './Logger';
+
+const log = createLogger('CopilotService');
 
 type CopilotSessionType = import('@github/copilot-sdk').CopilotSession;
 type ToolType = import('@github/copilot-sdk').Tool;
@@ -15,7 +18,7 @@ function logToFile(message: string): void {
     try {
       fs.mkdirSync(logsDir, { recursive: true });
     } catch (error) {
-      console.error('[CopilotService] Failed to create logs directory:', error);
+      log.error('Failed to create logs directory:', error);
     }
 
     const legacyPath = path.join(getUserDataDir(), 'copilot-chat.log');
@@ -24,7 +27,7 @@ function logToFile(message: string): void {
       try {
         fs.renameSync(legacyPath, newPath);
       } catch (error) {
-        console.warn('[CopilotService] Failed to migrate copilot chat log:', error);
+        log.warn('Failed to migrate copilot chat log:', error);
       }
     }
     logFilePath = newPath;
@@ -32,7 +35,7 @@ function logToFile(message: string): void {
 
   fs.appendFile(logFilePath, `${new Date().toISOString()} ${message}\n`, (err) => {
     if (err) {
-      console.error('[CopilotService] Failed to write log file:', err);
+      log.error('Failed to write log file:', err);
     }
   });
 }
@@ -84,13 +87,13 @@ export class CopilotService {
       }
       // Auto-approve permissions so CLI tools (bash, read, edit) don't block
       config.onPermissionRequest = async (request: { kind: string }) => {
-        console.log(`[CopilotService] Permission auto-approved: ${request.kind}`);
+        log.info(`Permission auto-approved: ${request.kind}`);
         logToFile(`Permission auto-approved: ${request.kind}`);
         return { kind: 'approved' };
       };
       // Handle user input requests so ask_user doesn't throw
       config.onUserInputRequest = async (request: { question: string }) => {
-        console.log(`[CopilotService] User input requested: ${request.question}`);
+        log.info(`User input requested: ${request.question}`);
         logToFile(`User input requested: ${request.question}`);
         return { answer: 'Not available in this context', wasFreeform: true };
       };
@@ -129,11 +132,11 @@ export class CopilotService {
       const enrichedPrompt = this.enrichPrompt(prompt);
       const { unsubscribeAll, hasReceivedChunks } = this.subscribeToEvents(session, abortController, messageId, onChunk);
 
-      console.log(`[CopilotService] Sending prompt to session ${conversationId}`);
+      log.info(`Sending prompt to session ${conversationId}`);
       logToFile(`Sending prompt to session ${conversationId}`);
       // 5 min timeout — orchestrator tool calls (vp_send_to_agent) can take minutes
       const response = await session.sendAndWait({ prompt: enrichedPrompt }, 300_000);
-      console.log(`[CopilotService] sendAndWait resolved for ${conversationId}`);
+      log.info(`sendAndWait resolved for ${conversationId}`);
       logToFile(`sendAndWait resolved for ${conversationId}`);
 
       unsubscribeAll();
@@ -173,7 +176,7 @@ export class CopilotService {
     const unsubDebug = session.on((event) => {
       if (event.type === 'assistant.message_delta') return;
       const payload = JSON.stringify(event.data ?? {}).slice(0, 200);
-      console.log(`[CopilotService] Event: ${event.type}`, payload);
+      log.info(`Event: ${event.type}`, payload);
       logToFile(`Event: ${event.type} ${payload}`);
     });
 

@@ -15,6 +15,9 @@ import {
   getLocalCopilotNodeModulesDir,
   isLocalCopilotInstallReady,
 } from './CopilotBootstrap';
+import { createLogger } from './Logger';
+
+const log = createLogger('SdkLoader');
 
 type CopilotClientType = import('@github/copilot-sdk').CopilotClient;
 
@@ -255,7 +258,7 @@ async function getCopilotNodeModules(): Promise<string> {
   }
 
   if (bootstrapError) {
-    console.warn('[SdkLoader] Copilot bootstrap failed, falling back to global install:', bootstrapError);
+    log.warn('Copilot bootstrap failed, falling back to global install:', bootstrapError);
   }
 
   return getGlobalNodeModules();

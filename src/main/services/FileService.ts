@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { FileEntry } from '../../shared/types';
+import { createLogger } from './Logger';
+
+const log = createLogger('FileService');
 
 export type { FileEntry };
 
@@ -24,7 +27,7 @@ class FileService {
 
   async readDirectory(dirPath: string, options?: { showHidden?: boolean }): Promise<FileEntry[]> {
     if (!this.isPathAllowed(dirPath)) {
-      console.error('Access denied: path outside allowed roots:', dirPath);
+      log.error('Access denied: path outside allowed roots:', dirPath);
       return [];
     }
 
@@ -47,7 +50,7 @@ class FileService {
 
       return fileEntries;
     } catch (error) {
-      console.error('Error reading directory:', error);
+      log.error('Error reading directory:', error);
       return [];
     }
   }
@@ -61,7 +64,7 @@ class FileService {
       const content = await fs.promises.readFile(filePath, 'utf-8');
       return content;
     } catch (error) {
-      console.error('Error reading file:', error);
+      log.error('Error reading file:', error);
       throw error;
     }
   }

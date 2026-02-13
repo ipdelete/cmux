@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { GitStatusMap } from '../../shared/types';
+import { createLogger } from '../logger';
+
+const log = createLogger('useGitStatusWatcher');
 
 export interface UseGitStatusWatcherResult {
   gitStatusMap: GitStatusMap;
@@ -22,7 +25,7 @@ export function useGitStatusWatcher(rootPath: string): UseGitStatusWatcherResult
         setGitStatusMap({});
       }
     } catch (err) {
-      console.error('Error loading git status:', err);
+      log.error('Error loading git status:', err);
       setGitStatusMap({});
     }
   }, [rootPath]);

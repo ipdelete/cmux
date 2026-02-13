@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Conversation, ConversationData } from '../../shared/types';
 import { getConversationsDir, getStateDir, getUserDataDir } from './AppPaths';
+import { createLogger } from './Logger';
+
+const log = createLogger('ConversationService');
 
 class ConversationService {
   private getConversationsDir(): string {
@@ -25,7 +28,7 @@ class ConversationService {
         await fs.promises.rename(legacyDir, dir);
         return dir;
       } catch (error) {
-        console.warn('Failed to migrate legacy conversations directory, copying instead:', error);
+        log.warn('Failed to migrate legacy conversations directory, copying instead:', error);
         try {
           await fs.promises.mkdir(dir, { recursive: true });
           const legacyFiles = await fs.promises.readdir(legacyDir);
@@ -36,7 +39,7 @@ class ConversationService {
           );
           return dir;
         } catch (copyError) {
-          console.warn('Failed to copy legacy conversations; using legacy directory:', copyError);
+          log.warn('Failed to copy legacy conversations; using legacy directory:', copyError);
           return legacyDir;
         }
       }
@@ -64,7 +67,7 @@ class ConversationService {
               updatedAt: data.updatedAt,
             };
           } catch {
-            console.warn(`Failed to read conversation file: ${file}`);
+            log.warn(`Failed to read conversation file: ${file}`);
             return null;
           }
         })
@@ -74,7 +77,7 @@ class ConversationService {
       conversations.sort((a, b) => b.updatedAt - a.updatedAt);
       return conversations;
     } catch (error) {
-      console.error('Failed to list conversations:', error);
+      log.error('Failed to list conversations:', error);
       return [];
     }
   }
@@ -88,7 +91,7 @@ class ConversationService {
       return JSON.parse(content) as ConversationData;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        console.error(`Failed to load conversation ${id}:`, error);
+        log.error(`Failed to load conversation ${id}:`, error);
       }
       return null;
     }
@@ -103,7 +106,7 @@ class ConversationService {
       await fs.promises.writeFile(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
       await fs.promises.rename(tmpPath, filePath);
     } catch (error) {
-      console.error(`Failed to save conversation ${data.id}:`, error);
+      log.error(`Failed to save conversation ${data.id}:`, error);
       try { await fs.promises.unlink(tmpPath); } catch { /* ignore */ }
     }
   }
@@ -116,7 +119,7 @@ class ConversationService {
       await fs.promises.unlink(filePath);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        console.error(`Failed to delete conversation ${id}:`, error);
+        log.error(`Failed to delete conversation ${id}:`, error);
       }
     }
   }

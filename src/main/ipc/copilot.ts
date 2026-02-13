@@ -1,6 +1,9 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { CopilotService } from '../services/CopilotService';
 import { createOrchestratorTools, setOnAgentCreated, getActiveAgents, registerAgent, ORCHESTRATOR_SYSTEM_MESSAGE } from '../services/OrchestratorTools';
+import { createLogger } from '../services/Logger';
+
+const log = createLogger('IPC:Copilot');
 
 const copilotService = new CopilotService();
 let toolsInitialized = false;
@@ -20,7 +23,7 @@ async function ensureToolsInitialized(mainWindow: BrowserWindow): Promise<void> 
       mainWindow.webContents.send('orchestrator:agent-created', info);
     });
   } catch (err) {
-    console.error('Failed to initialize orchestrator tools:', err);
+    log.error('Failed to initialize orchestrator tools:', err);
     toolsInitialized = false;
   }
 }

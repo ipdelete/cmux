@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { getSessionPath, getStateDir, getUserDataDir } from './AppPaths';
+import { createLogger } from './Logger';
+
+const log = createLogger('SessionService');
 
 const SESSION_FILE = 'session.json';
 const SESSION_VERSION = 5;
@@ -70,11 +73,11 @@ class SessionService {
       try {
         fs.renameSync(legacyPath, sessionPath);
       } catch (error) {
-        console.warn('Failed to migrate legacy session file, copying instead:', error);
+        log.warn('Failed to migrate legacy session file, copying instead:', error);
         try {
           fs.copyFileSync(legacyPath, sessionPath);
         } catch (copyError) {
-          console.warn('Failed to copy legacy session file:', copyError);
+          log.warn('Failed to copy legacy session file:', copyError);
         }
       }
     }
@@ -105,7 +108,7 @@ class SessionService {
       const sessionPath = this.getSessionPath();
       fs.writeFileSync(sessionPath, JSON.stringify(sessionData, null, 2), 'utf-8');
     } catch (error) {
-      console.error('Failed to save session:', error);
+      log.error('Failed to save session:', error);
     }
   }
 
@@ -167,19 +170,19 @@ class SessionService {
 
       // Migrate v1 to v2
       if (data.version === 1) {
-        console.log('Migrating session data from v1 to v2');
+        log.info('Migrating session data from v1 to v2');
         data = this.migrateV1ToV2(data as LegacySessionDataV1);
       }
 
       // Migrate v2 to v3
       if (data.version === 2) {
-        console.log('Migrating session data from v2 to v3');
+        log.info('Migrating session data from v2 to v3');
         data = this.migrateV2ToV3(data);
       }
 
       // Migrate v3 to v4
       if (data.version === 3) {
-        console.log('Migrating session data from v3 to v4');
+        log.info('Migrating session data from v3 to v4');
         data = this.migrateV3ToV4(data);
       }
 
@@ -191,7 +194,7 @@ class SessionService {
 
       // Validate version
       if (data.version !== SESSION_VERSION) {
-        console.warn('Session version mismatch, starting fresh');
+        log.warn('Session version mismatch, starting fresh');
         return null;
       }
 
@@ -203,7 +206,7 @@ class SessionService {
       // Filter out agents with non-existent directories
       data.agents = data.agents.filter((agent: SessionAgent) => {
         if (!fs.existsSync(agent.cwd)) {
-          console.warn(`Agent directory no longer exists: ${agent.cwd}`);
+          log.warn(`Agent directory no longer exists: ${agent.cwd}`);
           return false;
         }
         return true;
@@ -214,7 +217,7 @@ class SessionService {
         ...agent,
         openFiles: agent.openFiles.filter(file => {
           if (!fs.existsSync(file.path)) {
-            console.warn(`File no longer exists: ${file.path}`);
+            log.warn(`File no longer exists: ${file.path}`);
             return false;
           }
           return true;
@@ -239,7 +242,7 @@ class SessionService {
 
       return data;
     } catch (error) {
-      console.error('Failed to load session:', error);
+      log.error('Failed to load session:', error);
       return null;
     }
   }

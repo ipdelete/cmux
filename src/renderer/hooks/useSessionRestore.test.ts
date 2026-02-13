@@ -205,7 +205,7 @@ describe('useSessionRestore', () => {
     renderHook(() => useSessionRestore(dispatch));
     await new Promise(r => setTimeout(r, 50));
 
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to restore session:', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('[useSessionRestore]', 'Failed to restore session:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 

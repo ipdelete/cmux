@@ -1,6 +1,9 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
 import type { GitFileStatus, GitStatusMap } from '../../shared/types';
+import { createLogger } from './Logger';
+
+const log = createLogger('GitService');
 
 export type { GitFileStatus, GitStatusMap };
 
@@ -154,7 +157,7 @@ class GitService {
 
       return this.parseStatusOutput(output, repoRoot);
     } catch (error) {
-      console.error('Error getting git status:', error);
+      log.error('Error getting git status:', error);
       return {};
     }
   }

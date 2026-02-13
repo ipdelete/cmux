@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BrowserWindow } from 'electron';
 import type { FileWatchEvent, GitStatusChangeEvent } from '../../shared/types';
+import { createLogger } from './Logger';
+
+const log = createLogger('FileWatcherService');
 
 export type { FileWatchEvent };
 export type { GitStatusChangeEvent };
@@ -34,14 +37,14 @@ class FileWatcherService {
       });
 
       watcher.on('error', (err) => {
-        console.error(`Watcher error for ${normalizedPath}:`, err);
+        log.error(`Watcher error for ${normalizedPath}:`, err);
         this.unwatchDirectory(normalizedPath);
       });
 
       this.watchers.set(normalizedPath, watcher);
       return true;
     } catch (err) {
-      console.error(`Failed to watch directory ${dirPath}:`, err);
+      log.error(`Failed to watch directory ${dirPath}:`, err);
       return false;
     }
   }
@@ -132,14 +135,14 @@ class FileWatcherService {
       });
 
       watcher.on('error', (err) => {
-        console.error(`Git watcher error for ${repoRoot}:`, err);
+        log.error(`Git watcher error for ${repoRoot}:`, err);
         this.unwatchGitRepo(repoRoot);
       });
 
       this.gitWatchers.set(repoRoot, watcher);
       return true;
     } catch (err) {
-      console.error(`Failed to watch git repo ${repoRoot}:`, err);
+      log.error(`Failed to watch git repo ${repoRoot}:`, err);
       return false;
     }
   }
@@ -198,7 +201,7 @@ class FileWatcherService {
         try {
           callback(event);
         } catch (err) {
-          console.error('Error in git status callback:', err);
+          log.error('Error in git status callback:', err);
         }
       }
     }, this.GIT_DEBOUNCE_MS);
@@ -228,7 +231,7 @@ class FileWatcherService {
         try {
           callback(event);
         } catch (err) {
-          console.error('Error in file watcher callback:', err);
+          log.error('Error in file watcher callback:', err);
         }
       }
     }, this.DEBOUNCE_MS);

@@ -10,6 +10,9 @@ import { setupConversationIPC } from './main/ipc/conversation';
 import { setupAgentSessionIPC } from './main/ipc/agent-session';
 import { stopSharedClient } from './main/services/SdkLoader';
 import { agentSessionService } from './main/services/AgentSessionService';
+import { createLogger } from './main/services/Logger';
+
+const log = createLogger('Main');
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -20,7 +23,7 @@ if (isSquirrelUninstall && process.platform === 'win32' && app.isPackaged) {
     const userDataDir = app.getPath('userData');
     fs.rmSync(userDataDir, { recursive: true, force: true });
   } catch (error) {
-    console.error('[UninstallCleanup] Failed to remove user data directory:', error);
+    log.error('Failed to remove user data directory:', error);
   }
 }
 
