@@ -31,6 +31,14 @@ export function HotkeyHelp({ isOpen, onClose }: HotkeyHelpProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      dialogRef.current?.focus();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -40,11 +48,11 @@ export function HotkeyHelp({ isOpen, onClose }: HotkeyHelpProps) {
   };
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content hotkey-help">
+    <div className="modal-overlay" onClick={handleOverlayClick} role="presentation">
+      <div className="modal-content hotkey-help" role="dialog" aria-modal="true" aria-labelledby="hotkey-help-title" ref={dialogRef} tabIndex={-1}>
         <div className="modal-header">
-          <h2>Keyboard Shortcuts</h2>
-          <button className="modal-close" onClick={onClose}>
+          <h2 id="hotkey-help-title">Keyboard Shortcuts</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
             <Icon name="close" size="sm" />
           </button>
         </div>
