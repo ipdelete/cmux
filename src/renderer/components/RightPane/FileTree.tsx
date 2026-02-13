@@ -3,12 +3,18 @@ import { FileTreeNode } from './FileTreeNode';
 import { useDirectoryLoader } from '../../hooks/useDirectoryLoader';
 import { useFileWatcher } from '../../hooks/useFileWatcher';
 import { useGitStatusWatcher } from '../../hooks/useGitStatusWatcher';
+import { useContextMenu } from '../../hooks/useContextMenu';
+import { Icon } from '../Icon';
 
 interface FileTreeProps {
   rootPath: string;
   onFileClick: (filePath: string) => void;
   refreshTrigger?: number;
   showHiddenFiles?: boolean;
+}
+
+interface FileTreeMenuTarget {
+  path: string;
 }
 
 export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refreshTrigger, showHiddenFiles }) => {
@@ -19,8 +25,20 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
   } = useDirectoryLoader(rootPath, refreshTrigger ?? 0, showHiddenFiles);
 
   const { gitStatusMap, refreshGitStatus } = useGitStatusWatcher(rootPath);
+  const { contextMenu, openContextMenu, closeContextMenu } = useContextMenu<FileTreeMenuTarget>();
 
   useFileWatcher(rootPath, watchedDirsRef, refreshDirectory, refreshGitStatus);
+
+  const handleContextMenu = (e: React.MouseEvent, path: string) => {
+    openContextMenu(e, { path });
+  };
+
+  const handleCopyPath = () => {
+    if (contextMenu.target?.path) {
+      navigator.clipboard.writeText(contextMenu.target.path);
+    }
+    closeContextMenu();
+  };
 
   // Refresh git status on manual refresh
   React.useEffect(() => {
@@ -50,12 +68,24 @@ export const FileTree: React.FC<FileTreeProps> = ({ rootPath, onFileClick, refre
           level={0}
           onFileClick={onFileClick}
           onDirectoryToggle={handleDirectoryToggle}
+          onContextMenu={handleContextMenu}
           expandedDirs={expandedDirs}
           loadChildren={loadChildren}
           getChildren={getChildren}
           gitStatusMap={gitStatusMap}
         />
       ))}
+      {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x, position: 'fixed' }}
+        >
+          <button onClick={handleCopyPath}>
+            <Icon name="copy" size="sm" />
+            Copy Path
+          </button>
+        </div>
+      )}
     </div>
   );
 };
