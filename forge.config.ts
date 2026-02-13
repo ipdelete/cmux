@@ -102,7 +102,7 @@ const config: ForgeConfig = {
     }),
     // ForgeExternalsPlugin must come AFTER WebpackPlugin
     new ForgeExternalsPlugin({
-      externals: ['@homebridge/node-pty-prebuilt-multiarch'],
+      externals: ['@homebridge/node-pty-prebuilt-multiarch', 'electron-log'],
       includeDeps: true,
     }),
     // Fuses are used to enable/disable various Electron functionality
