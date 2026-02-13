@@ -41,55 +41,55 @@ Update `initialState` in `AppStateContext.tsx` to include `showHiddenFiles: fals
 
 ## Phase 3: UI — Toggle Button + FileTree
 
-### T009 [IMPL] Icon type update
+### T009 [IMPL] Icon type update ✅
 Add `'eye'` and `'eye-closed'` to `IconName` type.
 **File:** `src/renderer/components/Icon.tsx`
 
-### T010 [TEST] useDirectoryLoader showHidden tests
+### T010 [TEST] useDirectoryLoader showHidden tests ✅
 Add tests to `useDirectoryLoader.test.ts` verifying `showHidden` param is passed to `electronAPI.fs.readDirectory`.
 **File:** `src/renderer/hooks/useDirectoryLoader.test.ts`
 
-### T011 [IMPL] useDirectoryLoader showHidden param
+### T011 [IMPL] useDirectoryLoader showHidden param ✅
 Add `showHidden` parameter to `useDirectoryLoader`. Pass it through all `readDirectory` calls.
 **File:** `src/renderer/hooks/useDirectoryLoader.ts`
 
-### T012 [IMPL] FileTree showHiddenFiles prop
+### T012 [IMPL] FileTree showHiddenFiles prop ✅
 Add `showHiddenFiles` prop to `FileTree` and pass to `useDirectoryLoader`.
 **File:** `src/renderer/components/RightPane/FileTree.tsx`
 
-### T013 [TEST] RightPane toggle button tests
+### T013 [TEST] RightPane toggle button tests ✅
 Add tests to `RightPane.test.tsx` verifying toggle button renders, dispatches action, and shows correct icon.
 **File:** `src/renderer/components/RightPane/RightPane.test.tsx`
 
-### T014 [IMPL] RightPane toggle button
+### T014 [IMPL] RightPane toggle button ✅
 Add toggle button to Files pane header. Read `showHiddenFiles` from state, dispatch `SET_SHOW_HIDDEN_FILES`.
 **File:** `src/renderer/components/RightPane/RightPane.tsx`
 
 ## Phase 4: Persistence
 
-### T015 [TEST] SessionService v5 migration tests
+### T015 [TEST] SessionService v5 migration tests ✅
 Add tests to `SessionService.test.ts` verifying v4→v5 migration adds `showHiddenFiles: false`.
 **File:** `src/main/services/SessionService.test.ts`
 
-### T016 [IMPL] SessionService v5 migration
+### T016 [IMPL] SessionService v5 migration ✅
 Bump `SESSION_VERSION` to 5, add `showHiddenFiles` to `SessionData`, add `migrateV4ToV5` method.
 **File:** `src/main/services/SessionService.ts`
 
-### T017 [IMPL] Session save — include showHiddenFiles
+### T017 [IMPL] Session save — include showHiddenFiles ✅
 Ensure session save includes `showHiddenFiles` from AppState.
 **File:** `src/renderer/hooks/useSessionRestore.ts` (or wherever session save is triggered)
 
-### T018 [IMPL] Session restore — dispatch showHiddenFiles
+### T018 [IMPL] Session restore — dispatch showHiddenFiles ✅
 In `useSessionRestore`, dispatch `SET_SHOW_HIDDEN_FILES` when loading session data.
 **File:** `src/renderer/hooks/useSessionRestore.ts`
 
 ## Phase 5: Integration + Cleanup
 
-### T019 [IMPL] Update all test AppState objects
+### T019 [IMPL] Update all test AppState objects ✅
 Add `showHiddenFiles: false` to all inline `AppState` objects in tests.
 **Files:** All test files with inline AppState
 
-### T020 [SPEC] Run spec tests
+### T020 [SPEC] Run spec tests ✅
 Verify all spec tests in `specs/tests/045-toggle-hidden-files.md` pass.
 
 ## Dependency Diagram
