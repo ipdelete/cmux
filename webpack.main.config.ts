@@ -20,5 +20,7 @@ export const mainConfig: Configuration = {
   // Don't bundle node-pty - it has native modules that need to be loaded at runtime
   externals: {
     '@homebridge/node-pty-prebuilt-multiarch': 'commonjs @homebridge/node-pty-prebuilt-multiarch',
+    'electron-log': 'commonjs electron-log',
+    'electron-log/main': 'commonjs electron-log/main',
   },
 };
