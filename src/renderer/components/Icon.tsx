@@ -46,7 +46,8 @@ export type IconName =
   | 'error'
   | 'person'
   | 'eye'
-  | 'eye-closed';
+  | 'eye-closed'
+  | 'copy';
 
 interface IconProps {
   name: IconName;

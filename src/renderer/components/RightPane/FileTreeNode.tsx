@@ -18,6 +18,7 @@ interface FileTreeNodeProps {
   level: number;
   onFileClick: (path: string) => void;
   onDirectoryToggle: (path: string, isExpanded: boolean) => void;
+  onContextMenu?: (e: React.MouseEvent, path: string) => void;
   expandedDirs: Set<string>;
   loadChildren: (path: string) => Promise<FileEntry[]>;
   getChildren: (path: string) => FileEntry[];
@@ -29,6 +30,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   level,
   onFileClick,
   onDirectoryToggle,
+  onContextMenu,
   expandedDirs,
   loadChildren,
   getChildren,
@@ -91,6 +93,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         className={`file-tree-node ${statusClass}`}
         style={{ paddingLeft: `${indent}px` }}
         onClick={handleClick}
+        onContextMenu={onContextMenu ? (e) => onContextMenu(e, entry.path) : undefined}
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleClick()}
       >
@@ -118,6 +121,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
               level={level + 1}
               onFileClick={onFileClick}
               onDirectoryToggle={onDirectoryToggle}
+              onContextMenu={onContextMenu}
               expandedDirs={expandedDirs}
               loadChildren={loadChildren}
               getChildren={getChildren}

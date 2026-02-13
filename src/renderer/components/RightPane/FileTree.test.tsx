@@ -196,9 +196,59 @@ describe('FileTree', () => {
     });
   });
 
+  it('should show context menu on right-click and copy path', async () => {
+    mockReadDirectory.mockResolvedValue([
+      { name: 'file.txt', path: '/home/file.txt', isDirectory: false },
+    ]);
+
+    // Mock clipboard API
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    render(<FileTree rootPath="/home" onFileClick={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('file.txt')).toBeInTheDocument();
+    });
+
+    // Right-click on the file node
+    fireEvent.contextMenu(screen.getByText('file.txt').closest('.file-tree-node')!);
+
+    // Context menu should appear with "Copy Path"
+    expect(screen.getByText('Copy Path')).toBeInTheDocument();
+
+    // Click "Copy Path"
+    fireEvent.click(screen.getByText('Copy Path'));
+
+    expect(writeText).toHaveBeenCalledWith('/home/file.txt');
+    // Context menu should close
+    expect(screen.queryByText('Copy Path')).not.toBeInTheDocument();
+  });
+
+  it('should show context menu on right-click for folders', async () => {
+    mockReadDirectory.mockResolvedValue([
+      { name: 'folder', path: '/home/folder', isDirectory: true },
+    ]);
+
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    render(<FileTree rootPath="/home" onFileClick={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('folder')).toBeInTheDocument();
+    });
+
+    fireEvent.contextMenu(screen.getByText('folder').closest('.file-tree-node')!);
+
+    expect(screen.getByText('Copy Path')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Copy Path'));
+
+    expect(writeText).toHaveBeenCalledWith('/home/folder');
+  });
+
   it('should show empty directory when read fails', async () => {
-    // The component catches errors in loadDirectory and returns empty array
-    // which results in "Empty directory" being shown
     mockReadDirectory.mockRejectedValue(new Error('Permission denied'));
 
     render(<FileTree rootPath="/home" onFileClick={() => {}} />);
